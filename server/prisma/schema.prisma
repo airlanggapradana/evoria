@@ -5,11 +5,100 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  password      String
+  role          Role           @default(USER)
+  studentId     String? // NIM kalau mahasiswa
+  events        Event[]        @relation("EventOrganizer")
+  registrations Registration[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Event {
+  id            String         @id @default(cuid())
+  title         String
+  description   String
+  location      String
+  startTime     DateTime
+  endTime       DateTime
+  bannerUrl     String?
+  category      String?
+  isApproved    Boolean        @default(false)
+  isPaid        Boolean        @default(false)
+  price         Int? // dalam rupiah
+  organizer     User           @relation("EventOrganizer", fields: [organizerId], references: [id])
+  organizerId   String
+  tickets       Ticket[]
+  registrations Registration[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Ticket {
+  id            String         @id @default(cuid())
+  event         Event          @relation(fields: [eventId], references: [id])
+  eventId       String
+  name          String // Contoh: "Presale", "VIP", "Regular"
+  quantity      Int
+  price         Int
+  registrations Registration[]
+}
+
+model Registration {
+  id        String             @id @default(cuid())
+  user      User               @relation(fields: [userId], references: [id])
+  userId    String
+  event     Event              @relation(fields: [eventId], references: [id])
+  eventId   String
+  ticket    Ticket?            @relation(fields: [ticketId], references: [id])
+  ticketId  String?
+  payment   Payment?
+  status    RegistrationStatus @default(PENDING)
+  qrCode    String? // kode unik tiket (bisa di-generate)
+  checkedIn Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  registration   Registration  @relation(fields: [registrationId], references: [id])
+  registrationId String        @unique
+  amount         Int
+  method         String // e.g. "Midtrans", "Cash"
+  status         PaymentStatus @default(PENDING)
+  transactionId  String? // id dari payment gateway
+  paidAt         DateTime?
+  createdAt      DateTime      @default(now())
+}
+
+enum Role {
+  USER
+  ORGANIZER
+  ADMIN
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
 }
