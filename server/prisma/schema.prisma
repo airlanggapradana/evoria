@@ -38,7 +38,6 @@ model Event {
   category      String?
   isApproved    Boolean        @default(false)
   isPaid        Boolean        @default(false)
-  price         Int? // dalam rupiah
   organizer     User           @relation("EventOrganizer", fields: [organizerId], references: [id])
   organizerId   String
   tickets       Ticket[]
@@ -78,7 +77,7 @@ model Payment {
   registration   Registration  @relation(fields: [registrationId], references: [id])
   registrationId String        @unique
   amount         Int
-  method         String // e.g. "Midtrans", "Cash"
+  method         String? // e.g. "Midtrans", "Cash"
   status         PaymentStatus @default(PENDING)
   transactionId  String? // id dari payment gateway
   paidAt         DateTime?
