@@ -4,6 +4,7 @@ import authRouter from "./controllers/auth.controller";
 import cookieParser from "cookie-parser";
 import {errorHandler} from "./middlewares/error-handler";
 import eventRouter from "./controllers/event.controller";
+import registrationRouter from "./controllers/registration.controller";
 
 const app: Application = express();
 
@@ -13,7 +14,8 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 
 app.use('/api/auth', authRouter);
-app.use('/api/event', eventRouter)
+app.use('/api/event', eventRouter);
+app.use('/api/registration', registrationRouter);
 
 app.use(errorHandler)
 

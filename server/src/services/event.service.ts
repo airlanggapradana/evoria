@@ -124,19 +124,8 @@ export const getEventById = async (req: Request, res: Response, next: NextFuncti
         confirmedCount,
         checkedInCount,
         remainingTickets:
-          event.tickets.reduce((sum, t) => sum + t.quantity, 0) -
-          confirmedCount,
+          event.tickets.reduce((sum, t) => sum + t.quantity, 0),
       },
-      registrations: event.registrations.map((r) => ({
-        id: r.id,
-        user: r.user,
-        ticket: r.ticket,
-        status: r.status,
-        checkedIn: r.checkedIn,
-        payment: r.payment,
-        qrCode: r.qrCode,
-        createdAt: r.createdAt,
-      })),
       createdAt: event.createdAt,
       updatedAt: event.updatedAt,
     };

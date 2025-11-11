@@ -40,6 +40,13 @@ export const eventSchema = z.object({
   message: 'End time must be after start time',
 })
 
+export const registrationSchema = z.object({
+  eventId: z.string().min(3, 'Event ID must be at least 3 characters long'),
+  userId: z.string().min(3, 'User ID must be at least 3 characters long'),
+  ticketId: z.string().min(3, 'Ticket id must be at least 3 characters long'),
+})
+
+export type RegistrationInput = z.infer<typeof registrationSchema>;
 export type EventInput = z.infer<typeof eventSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
