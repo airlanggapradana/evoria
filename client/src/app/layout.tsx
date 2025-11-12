@@ -2,8 +2,8 @@ import "@/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import Navbar from "@/components/home/Navbar";
-import Footer from "@/components/home/Footer";
+import { Toaster } from "@/components/ui/sonner";
+import TanstackProvider from "@/utils/TanstackProvider";
 
 export const metadata: Metadata = {
   title: "LOKET - Your Event Ticketing Platform",
@@ -21,13 +21,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${plusJakartaSans.variable}`}>
-      <body>
-        <div className="flex min-h-screen flex-col">
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
-      </body>
+      <TanstackProvider>
+        <body>
+          {children}
+          <Toaster />
+        </body>
+      </TanstackProvider>
     </html>
   );
 }

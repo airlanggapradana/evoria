@@ -5,10 +5,16 @@ import cookieParser from "cookie-parser";
 import {errorHandler} from "./middlewares/error-handler";
 import eventRouter from "./controllers/event.controller";
 import registrationRouter from "./controllers/registration.controller";
+import {env} from "./env";
 
 const app: Application = express();
 
-app.use(cors());
+app.use(cors(
+  {
+    origin: env.FRONTEND_URL,
+    credentials: true,
+  }
+));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());

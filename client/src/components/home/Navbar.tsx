@@ -4,12 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getCookie } from "@/utils/cookies";
 
 const Navbar = () => {
   const router = useRouter();
+  const [cookies, setCookies] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchCookie = async () => {
+      const userCookie = await getCookie("access_token");
+      if (userCookie) {
+        setCookies(userCookie);
+      }
+    };
+    void fetchCookie();
+  }, []);
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-white/10 bg-slate-900/80 backdrop-blur-xl">
@@ -37,31 +49,55 @@ const Navbar = () => {
               <Search className="h-5 w-5" />
             </Button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push("/my-tickets")}
-              className="h-10 text-gray-300 hover:bg-white/10 hover:text-white"
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              My Tickets
-            </Button>
+            {cookies ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.push("/my-tickets")}
+                  className="h-10 text-gray-300 hover:bg-white/10 hover:text-white"
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  My Tickets
+                </Button>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 text-gray-300 hover:bg-white/10 hover:text-white"
-            >
-              <User className="h-5 w-5" />
-            </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => router.push("/profile")}
+                  className="h-10 w-10 text-gray-300 hover:bg-white/10 hover:text-white"
+                >
+                  <User className="h-5 w-5" />
+                </Button>
 
-            <Button
-              size="sm"
-              className="h-10 bg-gradient-to-r from-teal-500 to-purple-500 px-6 font-semibold hover:from-teal-600 hover:to-purple-600"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Create Event
-            </Button>
+                <Button
+                  size="sm"
+                  onClick={() => router.push("/create-event")}
+                  className="h-10 bg-gradient-to-r from-teal-500 to-purple-500 px-6 font-semibold hover:from-teal-600 hover:to-purple-600"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Event
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.push("/auth/sign-in")}
+                  className="h-10 text-gray-300 hover:bg-white/10 hover:text-white"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => router.push("/auth/sign-up")}
+                  className="h-10 bg-gradient-to-r from-teal-500 to-sky-500 px-6 font-semibold hover:from-teal-600 hover:to-sky-600"
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
