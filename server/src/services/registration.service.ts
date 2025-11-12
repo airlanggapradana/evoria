@@ -3,6 +3,8 @@ import prisma from "../../prisma/prisma";
 import midtransClient from "midtrans-client";
 import {env} from "../env";
 import {RegistrationInput, registrationSchema} from "../zod/schema";
+import QRCode from 'qrcode';
+import jwt from 'jsonwebtoken';
 
 const snap = new midtransClient.Snap({
   isProduction: env.IS_PRODUCTION === 'true',
@@ -41,15 +43,30 @@ export const registerEvent = async (req: Request, res: Response, next: NextFunct
       return res.status(400).json({message: "Ticket sold out"});
 
     // 3️⃣ Create registration
-    const qrCode = `QR-${user.id}-${event.id}-${Date.now()}`;
     const registration = await prisma.registration.create({
       data: {
         userId,
         eventId,
         ticketId,
-        qrCode,
         status: "PENDING",
       },
+    });
+
+    // 2️⃣ Generate QR code berdasarkan id registrasi
+    const token = jwt.sign(
+      {registrationId: registration.id},
+      env.JWT_SECRET,
+      {expiresIn: "1h"}
+    );
+
+    const frontendUrl = `${env.FRONTEND_URL}?token=${token}`;
+
+    const qrCodeDataUrl = await QRCode.toDataURL(frontendUrl, {errorCorrectionLevel: "M"});
+
+    // 3️⃣ Simpan QR code ke database
+    await prisma.registration.update({
+      where: {id: registration.id},
+      data: {qrCode: qrCodeDataUrl},
     });
 
     // 4️⃣ Reduce ticket stock
@@ -57,6 +74,29 @@ export const registerEvent = async (req: Request, res: Response, next: NextFunct
       where: {id: ticket.id},
       data: {quantity: ticket.quantity - 1},
     });
+
+    // 🔹 Jika event gratis, tidak perlu buat payment
+    if (!event.isPaid) {
+      return res.status(201).json({
+        message: "Free event registration created successfully",
+        data: {
+          registration: {
+            ...registration,
+            qrCode: qrCodeDataUrl,
+          },
+          event: {
+            title: event.title,
+            location: event.location,
+            startTime: event.startTime,
+            endTime: event.endTime,
+          },
+          ticket: {
+            name: ticket.name,
+            price: ticket.price,
+          },
+        },
+      });
+    }
 
     // 5️⃣ Create payment record
     const payment = await prisma.payment.create({
@@ -157,3 +197,155 @@ export const midtransNotification = async (req: Request, res: Response, next: Ne
     res.status(500).json({message: "Callback error"});
   }
 }
+
+export const checkInUser = async (req: Request, res: Response, next: NextFunction) => {
+  const {token} = req.query;
+  if (!token || typeof token !== "string")
+    return res.status(400).json({message: "Token missing"});
+
+  try {
+    const decoded = jwt.verify(token, env.JWT_SECRET) as { registrationId: string };
+
+    const registration = await prisma.registration.findUnique({
+      where: {id: decoded.registrationId},
+      include: {user: true, event: true},
+    });
+
+    if (!registration)
+      return res.status(404).json({message: "Registration not found"});
+    if (registration.checkedIn)
+      return res.status(400).json({message: "Already checked in"});
+
+    await prisma.registration.update({
+      where: {id: decoded.registrationId},
+      data: {checkedIn: true},
+    });
+
+    return res.status(200).json({
+      message: "Check-in successful",
+      participant: {
+        name: registration.user.name,
+        event: registration.event.title,
+        time: new Date().toISOString(),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getRegistrationDetails = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {id} = req.params;
+    const {token} = req.query;
+
+    let registrationId: string | undefined;
+
+    // ✅ Case 1: Token dari QR Code
+    if (token && typeof token === "string") {
+      try {
+        const decoded = jwt.verify(token, process.env.QR_SECRET!) as {
+          registrationId: string;
+        };
+        registrationId = decoded.registrationId;
+      } catch (err) {
+        return res.status(401).json({message: "Invalid or expired QR token"});
+      }
+    }
+
+    // ✅ Case 2: Langsung lewat ID
+    if (!registrationId && id) {
+      registrationId = id;
+    }
+
+    if (!registrationId) {
+      return res.status(400).json({
+        message: "Either registration ID or QR token is required",
+      });
+    }
+
+    // 🔹 Ambil data lengkap dari Prisma
+    const registration = await prisma.registration.findUnique({
+      where: {id: registrationId},
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            studentId: true,
+          },
+        },
+        event: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            location: true,
+            startTime: true,
+            endTime: true,
+            isPaid: true,
+            isApproved: true,
+            bannerUrl: true,
+            organizer: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        ticket: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+          },
+        },
+        payment: true,
+      },
+    });
+
+    if (!registration) {
+      return res.status(404).json({message: "Registration not found"});
+    }
+
+    // 🔹 Format respons yang rapi untuk frontend
+    const responseData = {
+      id: registration.id,
+      status: registration.status,
+      checkedIn: registration.checkedIn,
+      qrCode: registration.qrCode,
+      createdAt: registration.createdAt,
+      updatedAt: registration.updatedAt,
+      user: registration.user,
+      event: {
+        ...registration.event,
+        organizer: registration.event.organizer,
+      },
+      ticket: registration.ticket,
+      payment: registration.payment
+        ? {
+          id: registration.payment.id,
+          amount: registration.payment.amount,
+          method: registration.payment.method,
+          status: registration.payment.status,
+          transactionId: registration.payment.transactionId,
+          paidAt: registration.payment.paidAt,
+        }
+        : null,
+    };
+
+    return res.status(200).json({
+      message: "Registration details fetched successfully",
+      data: responseData,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

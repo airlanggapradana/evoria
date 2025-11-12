@@ -7,6 +7,7 @@ const envSchema = z.object({
   MIDTRANS_SERVER_KEY: z.string(),
   MIDTRANS_CLIENT_KEY: z.string(),
   IS_PRODUCTION: z.string(),
+  FRONTEND_URL: z.string()
 })
 
 export const env = envSchema.parse(process.env);
