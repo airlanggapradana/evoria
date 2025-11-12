@@ -38,7 +38,7 @@ const EventCard = ({
         isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
       }`}
     >
-      <Card className="group relative overflow-hidden border-white/10 bg-gradient-to-br from-slate-900 to-slate-800 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/20">
+      <Card className="group relative overflow-hidden border-white/10 bg-gradient-to-br from-slate-900 to-slate-800 pt-0 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/20">
         {/* Image Section */}
         <div className="relative h-56 overflow-hidden">
           <Image
@@ -53,7 +53,7 @@ const EventCard = ({
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-60" />
 
           {/* Category Badge */}
-          <Badge className="absolute top-4 left-4 border-0 bg-gradient-to-r from-teal-500 to-purple-500 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+          <Badge className="absolute top-4 left-4 border-0 bg-gradient-to-r from-teal-500 to-sky-500 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
             {category}
           </Badge>
 
@@ -68,7 +68,7 @@ const EventCard = ({
               }}
               className={`h-9 w-9 rounded-full backdrop-blur-sm ${
                 isLiked
-                  ? "bg-red-500/90 text-white hover:bg-red-600"
+                  ? "bg-sky-500/90 text-white hover:bg-sky-600"
                   : "bg-white/20 text-white hover:bg-white/30"
               }`}
             >
@@ -89,7 +89,7 @@ const EventCard = ({
 
         <CardContent className="space-y-4 p-5">
           {/* Title */}
-          <h3 className="line-clamp-2 min-h-[3.5rem] text-xl font-bold text-white transition-all group-hover:bg-gradient-to-r group-hover:from-teal-400 group-hover:to-purple-400 group-hover:bg-clip-text group-hover:text-transparent">
+          <h3 className="line-clamp-2 min-h-[3.5rem] text-xl font-bold text-white transition-all group-hover:bg-gradient-to-r group-hover:from-teal-400 group-hover:to-sky-400 group-hover:bg-clip-text group-hover:text-transparent">
             {title}
           </h3>
 
@@ -125,7 +125,7 @@ const EventCard = ({
                   e.stopPropagation();
                   router.push(`/event/${id}`);
                 }}
-                className="bg-gradient-to-r from-teal-500 to-purple-500 px-6 font-semibold transition-all hover:scale-105 hover:from-teal-600 hover:to-purple-600"
+                className="bg-gradient-to-r from-teal-500 to-sky-500 px-6 font-semibold transition-all hover:scale-105 hover:from-teal-600 hover:to-sky-600"
               >
                 Book Now
               </Button>

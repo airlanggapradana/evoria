@@ -28,9 +28,9 @@ const Footer = () => {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
           {/* Brand Section - Larger */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-1">
             <Link href="/" className="group mb-6 flex items-center gap-2">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-purple-500 transition-transform group-hover:scale-105">
                 <Ticket className="h-6 w-6 text-white" />
@@ -89,104 +89,12 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="lg:col-span-2">
-            <h3 className="mb-4 text-lg font-bold text-white">Quick Links</h3>
-            <ul className="space-y-3 text-sm">
-              <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 transition-colors hover:text-teal-400"
-                >
-                  Browse Events
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 transition-colors hover:text-teal-400"
-                >
-                  Create Event
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 transition-colors hover:text-teal-400"
-                >
-                  How It Works
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 transition-colors hover:text-teal-400"
-                >
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 transition-colors hover:text-teal-400"
-                >
-                  Become a Partner
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Categories */}
-          <div className="lg:col-span-2">
-            <h3 className="mb-4 text-lg font-bold text-white">Categories</h3>
-            <ul className="space-y-3 text-sm">
-              <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 transition-colors hover:text-teal-400"
-                >
-                  Concerts
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 transition-colors hover:text-teal-400"
-                >
-                  Sports
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 transition-colors hover:text-teal-400"
-                >
-                  Theater & Arts
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 transition-colors hover:text-teal-400"
-                >
-                  Festivals
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-gray-400 transition-colors hover:text-teal-400"
-                >
-                  Conferences
-                </Link>
-              </li>
-            </ul>
-          </div>
-
           {/* Support & Contact */}
-          <div className="lg:col-span-4">
-            <h3 className="mb-4 text-lg font-bold text-white">Support</h3>
-            <ul className="mb-6 space-y-3 text-sm">
+          <div className="flex flex-col items-end lg:col-span-1">
+            <h3 className="mb-4 text-right text-lg font-bold text-white">
+              Support
+            </h3>
+            <ul className="mb-6 space-y-3 text-right text-sm">
               <li>
                 <Link
                   href="#"
@@ -231,17 +139,17 @@ const Footer = () => {
 
             {/* Contact Info */}
             <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-3 text-gray-400">
-                <Mail className="h-4 w-4 text-teal-400" />
+              <div className="flex items-center justify-end gap-3 text-gray-400">
                 <span>support@eventhub.com</span>
+                <Mail className="h-4 w-4 text-teal-400" />
               </div>
-              <div className="flex items-center gap-3 text-gray-400">
-                <Phone className="h-4 w-4 text-teal-400" />
+              <div className="flex items-center justify-end gap-3 text-gray-400">
                 <span>+1 (555) 123-4567</span>
+                <Phone className="h-4 w-4 text-teal-400" />
               </div>
-              <div className="flex items-center gap-3 text-gray-400">
-                <MapPin className="h-4 w-4 text-teal-400" />
+              <div className="flex items-center justify-end gap-3 text-gray-400">
                 <span>123 Event Street, NY 10001</span>
+                <MapPin className="h-4 w-4 text-teal-400" />
               </div>
             </div>
           </div>

@@ -17,10 +17,10 @@ const Navbar = () => {
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="group flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-purple-500 transition-transform group-hover:scale-105">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-sky-500 transition-transform group-hover:scale-105">
               <Ticket className="h-5 w-5 text-white" />
             </div>
-            <span className="bg-gradient-to-r from-teal-400 to-purple-400 bg-clip-text text-2xl font-bold text-transparent">
+            <span className="bg-gradient-to-r from-teal-400 to-sky-400 bg-clip-text text-xl font-black text-transparent">
               LOCKETIX
             </span>
           </Link>

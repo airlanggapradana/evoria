@@ -101,16 +101,16 @@ const FeaturedEvents = () => {
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-4 py-2 backdrop-blur-sm">
             <Sparkles className="h-4 w-4 text-teal-400" />
             <span className="text-sm font-medium text-teal-300">
-              Trending Now
+              Trending Saat Ini
             </span>
           </div>
 
-          <h2 className="mb-4 bg-gradient-to-r from-white via-gray-200 to-white bg-clip-text text-4xl font-extrabold text-transparent md:text-5xl lg:text-6xl">
-            Featured Events
+          <h2 className="mb-4 bg-gradient-to-r from-white via-gray-200 to-white bg-clip-text py-4 text-4xl font-extrabold text-transparent md:text-5xl lg:text-6xl">
+            Acara Pilihan Minggu Ini
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-400">
-            Discover the hottest events happening near you. From concerts to
-            conferences, we've got you covered.
+            Temukan acara terbaik yang sedang tren dan jangan lewatkan momen
+            seru di sekitar Anda.
           </p>
         </div>
 
@@ -123,7 +123,7 @@ const FeaturedEvents = () => {
               variant="ghost"
               className={`h-10 rounded-full px-6 font-medium transition-all ${
                 selectedCategory === category
-                  ? "bg-gradient-to-r from-teal-500 to-purple-500 text-white hover:from-teal-600 hover:to-purple-600"
+                  ? "bg-gradient-to-r from-teal-500 to-sky-500 text-white hover:from-teal-600 hover:to-sky-600"
                   : "border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
               }`}
             >
@@ -151,14 +151,15 @@ const FeaturedEvents = () => {
           <div className="inline-flex flex-col items-center gap-6">
             <Button
               size="lg"
-              className="group h-14 bg-gradient-to-r from-teal-500 to-purple-500 px-8 font-semibold transition-all hover:scale-105 hover:from-teal-600 hover:to-purple-600"
+              className="group h-14 bg-gradient-to-r from-teal-500 to-sky-500 px-8 font-semibold transition-all hover:scale-105 hover:from-teal-600 hover:to-sky-600"
             >
-              View All Events
+              Lihat Semua Acara
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <p className="text-sm text-gray-400">
-              Over <span className="font-semibold text-teal-400">10,000+</span>{" "}
-              events available
+              Lebih dari{" "}
+              <span className="font-semibold text-teal-400">10,000+</span> acara
+              menanti Anda.
             </p>
           </div>
         </div>
