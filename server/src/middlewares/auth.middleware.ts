@@ -11,7 +11,6 @@ interface JwtPayload {
   exp: number;
 }
 
-// Extend Express Request agar bisa punya properti `user`
 declare global {
   namespace Express {
     interface Request {
@@ -26,18 +25,15 @@ export const authMiddleware = (
   next: NextFunction
 ) => {
   try {
-    // Ambil token dari cookie
     const token = req.cookies?.access_token;
 
     if (!token) {
       return res.status(401).json({message: "Access token missing"});
     }
 
-    // Verifikasi token
-    // Simpan payload ke req.user
     req.user = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
 
-    next(); // lanjut ke route handler
+    next();
   } catch (err: any) {
     if (err.name === "TokenExpiredError") {
       return res.status(401).json({message: "Token expired"});

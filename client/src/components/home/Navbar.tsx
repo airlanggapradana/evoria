@@ -1,17 +1,29 @@
 "use client";
-import { Search, Ticket, Menu, X, User, Calendar, Plus } from "lucide-react";
+import {
+  Search,
+  Ticket,
+  Menu,
+  X,
+  User,
+  Calendar,
+  Plus,
+  LogOut,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getCookie } from "@/utils/cookies";
+import { deleteCookie, getCookie } from "@/utils/cookies";
+import { useMe } from "@/utils/query";
 
 const Navbar = () => {
   const router = useRouter();
   const [cookies, setCookies] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const { data } = useMe();
 
   useEffect(() => {
     const fetchCookie = async () => {
@@ -49,7 +61,7 @@ const Navbar = () => {
               <Search className="h-5 w-5" />
             </Button>
 
-            {cookies ? (
+            {cookies && data ? (
               <>
                 <Button
                   variant="ghost"
@@ -70,14 +82,16 @@ const Navbar = () => {
                   <User className="h-5 w-5" />
                 </Button>
 
-                <Button
-                  size="sm"
-                  onClick={() => router.push("/create-event")}
-                  className="h-10 bg-gradient-to-r from-teal-500 to-purple-500 px-6 font-semibold hover:from-teal-600 hover:to-purple-600"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Event
-                </Button>
+                {data.role !== "USER" && (
+                  <Button
+                    size="sm"
+                    onClick={() => router.push("/create-event")}
+                    className="h-10 bg-gradient-to-r from-teal-500 to-purple-500 px-6 font-semibold hover:from-teal-600 hover:to-purple-600"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Event
+                  </Button>
+                )}
               </>
             ) : (
               <>
@@ -134,69 +148,83 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="border-t border-white/10 bg-slate-900/95 backdrop-blur-xl lg:hidden">
           <div className="container mx-auto space-y-4 px-4 py-6">
-            {/* Mobile Search */}
-            <div className="relative">
-              <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Search events..."
-                className="h-12 border-white/10 bg-white/5 pl-12 text-white placeholder:text-gray-400"
-              />
-            </div>
+            {/* Mobile Menu */}
+            {isMenuOpen && (
+              <div className="border-t border-white/10 bg-slate-900/95 backdrop-blur-xl lg:hidden">
+                <div className="container mx-auto space-y-4 px-4 py-6">
+                  {/* Mobile Search */}
+                  <div className="relative">
+                    <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <Input
+                      placeholder="Search events..."
+                      className="h-12 border-white/10 bg-white/5 pl-12 text-white placeholder:text-gray-400"
+                    />
+                  </div>
 
-            {/* Mobile Links */}
-            <div className="space-y-2">
-              <Link
-                href="#events"
-                className="block py-3 text-sm font-medium text-gray-300 transition-colors hover:text-white"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Browse Events
-              </Link>
-              <Link
-                href="#categories"
-                className="block py-3 text-sm font-medium text-gray-300 transition-colors hover:text-white"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Categories
-              </Link>
-              <Link
-                href="#how-it-works"
-                className="block py-3 text-sm font-medium text-gray-300 transition-colors hover:text-white"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                How It Works
-              </Link>
-              <Link
-                href="#contact"
-                className="block py-3 text-sm font-medium text-gray-300 transition-colors hover:text-white"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Contact
-              </Link>
-            </div>
-
-            {/* Mobile Actions */}
-            <div className="space-y-2 border-t border-white/10 pt-4">
-              <Button
-                variant="ghost"
-                onClick={() => router.push("/my-tickets")}
-                className="w-full justify-start text-gray-300 hover:bg-white/10 hover:text-white"
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                My Tickets
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-gray-300 hover:bg-white/10 hover:text-white"
-              >
-                <User className="mr-2 h-4 w-4" />
-                Sign In
-              </Button>
-              <Button className="w-full bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Event
-              </Button>
-            </div>
+                  {/* Mobile Actions */}
+                  <div className="space-y-2 border-t border-white/10 pt-4">
+                    {cookies && data ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          onClick={() => router.push("/my-tickets")}
+                          className="w-full justify-start text-gray-300 hover:bg-white/10 hover:text-white"
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          My Tickets
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => router.push("/profile")}
+                          className="w-full justify-start text-gray-300 hover:bg-white/10 hover:text-white"
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          Profile
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={async () => {
+                            await deleteCookie("access_token");
+                            await deleteCookie("refresh_token");
+                            window.location.reload();
+                          }}
+                          className="w-full justify-start text-gray-300 hover:bg-white/10 hover:text-white"
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Logout
+                        </Button>
+                        {data.role !== "USER" && (
+                          <Button
+                            onClick={() => router.push("/create-event")}
+                            className="w-full bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600"
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Create Event
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          variant="ghost"
+                          onClick={() => router.push("/auth/sign-in")}
+                          className="w-full justify-start text-gray-300 hover:bg-white/10 hover:text-white"
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          Sign In
+                        </Button>
+                        <Button
+                          onClick={() => router.push("/auth/sign-up")}
+                          className="w-full bg-gradient-to-r from-teal-500 to-sky-500 hover:from-teal-600 hover:to-sky-600"
+                        >
+                          Sign Up
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

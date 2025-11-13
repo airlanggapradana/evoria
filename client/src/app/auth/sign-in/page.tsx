@@ -44,6 +44,7 @@ const SignInPage = () => {
           richColors: true,
         });
         form.reset();
+        router.push("/");
       }
     } catch (e) {
       if (e instanceof Error) {
