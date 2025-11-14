@@ -4,6 +4,7 @@ import type { LoginInput, RegisterInput } from "@/zod/schema";
 import { env } from "@/env";
 import type { LoginResponse } from "@/types/login.type";
 import type { MeResponse } from "@/types/me.type";
+import type { AllEventsResponse } from "@/types/all-events.type";
 
 export const useRegister = () => {
   return useMutation({
@@ -70,6 +71,30 @@ export const useMe = () => {
         if (e instanceof AxiosError) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
           throw new Error(e.response?.data.message ?? "Fetching user failed");
+        }
+        throw new Error("An unexpected error occurred");
+      }
+    },
+  });
+};
+
+export const useGetAllEvents = () => {
+  return useQuery({
+    queryKey: ["all-events"],
+    queryFn: async () => {
+      try {
+        return await axios
+          .get(`${env.NEXT_PUBLIC_BACKEND_URL}/event`, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            method: "GET",
+          })
+          .then((res) => (res.data as AllEventsResponse).data);
+      } catch (e) {
+        if (e instanceof AxiosError) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
+          throw new Error(e.response?.data.message ?? "Fetching events failed");
         }
         throw new Error("An unexpected error occurred");
       }
