@@ -139,7 +139,7 @@ const FeaturedEvents = () => {
         </div>
 
         {/* Events Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:gap-8 lg:grid-cols-2">
           {filteredEvents.length > 0 ? (
             filteredEvents.map((event) => {
               const startDate = formatDate(event.startTime);
@@ -148,7 +148,7 @@ const FeaturedEvents = () => {
               return (
                 <div
                   key={event.id}
-                  className="group relative overflow-hidden rounded-3xl border border-gray-800/50 bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:border-teal-500/30 hover:shadow-2xl hover:shadow-teal-500/10"
+                  className="group relative overflow-hidden rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:border-teal-500/30 hover:shadow-2xl hover:shadow-teal-500/10 sm:rounded-3xl"
                 >
                   {/* Hover glow effect */}
                   <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
@@ -157,29 +157,29 @@ const FeaturedEvents = () => {
                   </div>
 
                   <div className="relative flex flex-col md:flex-row">
-                    <div className="relative overflow-hidden md:w-1/3">
+                    <div className="relative h-48 overflow-hidden sm:h-56 md:h-auto md:w-1/3">
                       <Image
                         src={`https://picsum.photos/seed/${event.id}/200/300`}
                         alt={event.title}
                         width={400}
                         height={300}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <div
                         className={`absolute inset-0 bg-gradient-to-br ${categoryGradients[event.category] ?? "from-gray-500 to-gray-500"} opacity-60 transition-opacity duration-300 group-hover:opacity-70`}
                       ></div>
-                      <div className="relative flex h-64 flex-col items-center justify-center p-8 md:h-full">
-                        <div className="rounded-2xl bg-white/10 px-8 py-6 text-center ring-1 ring-white/20 backdrop-blur-md transition-all duration-300 group-hover:bg-white/15 group-hover:ring-white/30">
-                          <div className="mb-2 text-6xl font-bold text-white drop-shadow-lg">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
+                        <div className="rounded-xl bg-white/10 px-5 py-4 text-center ring-1 ring-white/20 backdrop-blur-md transition-all duration-300 group-hover:bg-white/15 group-hover:ring-white/30 sm:rounded-2xl sm:px-6 sm:py-5 md:px-8 md:py-6">
+                          <div className="mb-1 text-4xl font-bold text-white drop-shadow-lg sm:text-5xl md:mb-2 md:text-6xl">
                             {startDate.day}
                           </div>
-                          <div className="text-xl font-semibold tracking-wider text-white/90">
+                          <div className="text-base font-semibold tracking-wider text-white/90 sm:text-lg md:text-xl">
                             {startDate.month}
                           </div>
                         </div>
-                        <div className="absolute top-4 right-4">
+                        <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
                           {!event.isPaid && (
-                            <span className="rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-bold text-white shadow-lg backdrop-blur-sm transition-all duration-300 group-hover:bg-emerald-400">
+                            <span className="rounded-full bg-emerald-500/90 px-2.5 py-0.5 text-xs font-bold text-white shadow-lg backdrop-blur-sm transition-all duration-300 group-hover:bg-emerald-400 sm:px-3 sm:py-1">
                               FREE
                             </span>
                           )}
@@ -187,81 +187,81 @@ const FeaturedEvents = () => {
                       </div>
                     </div>
 
-                    <div className="relative p-8 md:w-2/3">
+                    <div className="relative p-4 sm:p-6 md:w-2/3 md:p-8">
                       <div className="mb-4 flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="mb-3 flex items-center gap-3">
-                            <span className="rounded-full bg-gradient-to-r from-gray-800 to-gray-700 px-3 py-1 text-xs font-semibold text-gray-200 ring-1 ring-white/10 transition-all duration-300 group-hover:from-teal-600/20 group-hover:to-purple-600/20 group-hover:ring-teal-400/30">
+                          <div className="mb-3 flex flex-wrap items-center gap-2 sm:gap-3">
+                            <span className="rounded-full bg-gradient-to-r from-gray-800 to-gray-700 px-2.5 py-1 text-xs font-semibold text-gray-200 ring-1 ring-white/10 transition-all duration-300 group-hover:from-teal-600/20 group-hover:to-purple-600/20 group-hover:ring-teal-400/30 sm:px-3">
                               {event.category}
                             </span>
-                            <div className="flex items-center gap-1 text-sm text-gray-400 transition-colors duration-300 group-hover:text-gray-300">
-                              <Users className="mr-1 h-4 w-4 text-teal-400" />
+                            <div className="flex items-center gap-1 text-xs text-gray-400 transition-colors duration-300 group-hover:text-gray-300 sm:text-sm">
+                              <Users className="mr-1 h-3.5 w-3.5 text-teal-400 sm:h-4 sm:w-4" />
                               <span className="font-medium">
                                 {event.stats.confirmedCount}
                               </span>
                               <span>RSVP&apos;d</span>
                             </div>
                           </div>
-                          <h2 className="mb-2 text-3xl font-bold text-gray-100 transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-teal-400 group-hover:to-purple-400 group-hover:bg-clip-text group-hover:text-transparent">
+                          <h2 className="mb-2 text-xl font-bold text-gray-100 transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-teal-400 group-hover:to-purple-400 group-hover:bg-clip-text group-hover:text-transparent sm:text-2xl md:text-3xl">
                             {event.title}
                           </h2>
-                          <p className="mb-6 line-clamp-2 text-gray-400 transition-colors duration-300 group-hover:text-gray-300">
+                          <p className="mb-4 line-clamp-2 text-sm text-gray-400 transition-colors duration-300 group-hover:text-gray-300 sm:mb-6 sm:text-base">
                             {event.description}
                           </p>
                         </div>
                       </div>
 
-                      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div className="flex items-center gap-3 text-gray-300">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/80 ring-1 ring-white/10 transition-all duration-300 group-hover:bg-teal-500/10 group-hover:ring-teal-400/30">
-                            <Clock className="h-5 w-5 text-teal-400 transition-transform duration-300 group-hover:scale-110" />
+                      <div className="mb-4 grid grid-cols-1 gap-3 sm:mb-6 sm:gap-4 md:grid-cols-2">
+                        <div className="flex items-center gap-2.5 text-gray-300 sm:gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-800/80 ring-1 ring-white/10 transition-all duration-300 group-hover:bg-teal-500/10 group-hover:ring-teal-400/30 sm:h-10 sm:w-10">
+                            <Clock className="h-4 w-4 text-teal-400 transition-transform duration-300 group-hover:scale-110 sm:h-5 sm:w-5" />
                           </div>
                           <div>
                             <div className="text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400">
                               Time
                             </div>
-                            <div className="text-sm font-semibold text-gray-300 transition-colors duration-300 group-hover:text-gray-100">
+                            <div className="text-xs font-semibold text-gray-300 transition-colors duration-300 group-hover:text-gray-100 sm:text-sm">
                               {formatTime(event.startTime)} -{" "}
                               {formatTime(event.endTime)}
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3 text-gray-300">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/80 ring-1 ring-white/10 transition-all duration-300 group-hover:bg-purple-500/10 group-hover:ring-purple-400/30">
-                            <MapPin className="h-5 w-5 text-purple-400 transition-transform duration-300 group-hover:scale-110" />
+                        <div className="flex items-center gap-2.5 text-gray-300 sm:gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-800/80 ring-1 ring-white/10 transition-all duration-300 group-hover:bg-purple-500/10 group-hover:ring-purple-400/30 sm:h-10 sm:w-10">
+                            <MapPin className="h-4 w-4 text-purple-400 transition-transform duration-300 group-hover:scale-110 sm:h-5 sm:w-5" />
                           </div>
                           <div>
                             <div className="text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400">
                               Location
                             </div>
-                            <div className="text-sm font-semibold text-gray-300 transition-colors duration-300 group-hover:text-gray-100">
+                            <div className="text-xs font-semibold text-gray-300 transition-colors duration-300 group-hover:text-gray-100 sm:text-sm">
                               {event.location}
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between border-t border-gray-800/50 pt-6 transition-colors duration-300 group-hover:border-gray-700/50">
-                        <div className="flex items-center gap-6">
+                      <div className="flex flex-col gap-4 border-t border-gray-800/50 pt-4 transition-colors duration-300 group-hover:border-gray-700/50 sm:flex-row sm:items-center sm:justify-between sm:pt-6">
+                        <div className="flex items-center gap-4 sm:gap-6">
                           <div>
-                            <div className="mb-1 text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400">
+                            <div className="mb-0.5 text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400 sm:mb-1">
                               Starting from
                             </div>
-                            <div className="text-2xl font-bold text-gray-300 transition-colors duration-300 group-hover:text-teal-400">
+                            <div className="text-xl font-bold text-gray-300 transition-colors duration-300 group-hover:text-teal-400 sm:text-2xl">
                               {lowestPrice === 0
                                 ? "Free"
                                 : formatPrice(lowestPrice)}
                             </div>
                           </div>
-                          <div className="h-12 w-px bg-gray-800/50 transition-colors duration-300 group-hover:bg-gray-700/50"></div>
+                          <div className="h-10 w-px bg-gray-800/50 transition-colors duration-300 group-hover:bg-gray-700/50 sm:h-12"></div>
                           <div>
-                            <div className="mb-1 text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400">
+                            <div className="mb-0.5 text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400 sm:mb-1">
                               Tickets left
                             </div>
                             <div className="flex items-center gap-2">
-                              <TrendingUp className="h-4 w-4 text-emerald-400 transition-transform duration-300 group-hover:scale-110" />
-                              <span className="text-lg font-bold text-gray-300 transition-colors duration-300 group-hover:text-emerald-400">
+                              <TrendingUp className="h-3.5 w-3.5 text-emerald-400 transition-transform duration-300 group-hover:scale-110 sm:h-4 sm:w-4" />
+                              <span className="text-base font-bold text-gray-300 transition-colors duration-300 group-hover:text-emerald-400 sm:text-lg">
                                 {event.stats.remainingTickets}
                               </span>
                             </div>
@@ -269,7 +269,7 @@ const FeaturedEvents = () => {
                         </div>
 
                         <button
-                          className="flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-3 font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:scale-105 hover:from-indigo-500 hover:to-purple-500 hover:shadow-xl hover:shadow-indigo-500/50 active:scale-95"
+                          className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:scale-105 hover:from-indigo-500 hover:to-purple-500 hover:shadow-xl hover:shadow-indigo-500/50 active:scale-95 sm:w-auto sm:px-8 sm:py-3 sm:text-base"
                           onClick={async () => {
                             const session = await getCookie("access_token");
                             if (!session) {
@@ -280,7 +280,7 @@ const FeaturedEvents = () => {
                           }}
                         >
                           Get Tickets
-                          <ChevronRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+                          <ChevronRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 sm:h-5 sm:w-5" />
                         </button>
                       </div>
                     </div>
@@ -289,8 +289,8 @@ const FeaturedEvents = () => {
               );
             })
           ) : (
-            <div className="col-span-full rounded-2xl border border-gray-800/50 bg-gray-900/50 p-12 text-center backdrop-blur-sm">
-              <p className="text-lg text-gray-400">
+            <div className="col-span-full rounded-2xl border border-gray-800/50 bg-gray-900/50 p-8 text-center backdrop-blur-sm sm:p-12">
+              <p className="text-base text-gray-400 sm:text-lg">
                 No events found for this category
               </p>
             </div>

@@ -13,55 +13,20 @@ import {
   UserCheck,
 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import { useGetEventDetails, useMakePayment, useMe } from "@/utils/query";
+import { toast } from "sonner";
 
 const EventDetail = () => {
   const router = useRouter();
+  const { id } = useParams();
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
 
-  const eventData = {
-    id: "EVT-003",
-    title: "Campus Music Festival",
-    description:
-      "A celebration of music, creativity, and student performances from across the university.",
-    location: "Lapangan Utama",
-    startTime: "2025-12-20T10:00:00.000Z",
-    endTime: "2025-12-20T16:00:00.000Z",
-    bannerUrl: "https://example.com/banner-musicfest.jpg",
-    category: "Entertainment",
-    isPaid: true,
-    isApproved: true,
-    organizer: {
-      id: "USER-1",
-      name: "Google Developer Group UMS",
-      email: "gdgums@example.com",
-    },
-    tickets: [
-      {
-        id: "TICKET-005",
-        name: "Regular",
-        price: 30000,
-        quantity: 100,
-      },
-      {
-        id: "TICKET-004",
-        name: "Early Bird",
-        price: 25000,
-        quantity: 49,
-      },
-    ],
-    stats: {
-      totalRegistrations: 1,
-      confirmedCount: 1,
-      checkedInCount: 0,
-      remainingTickets: 149,
-    },
-    createdAt: "2025-11-11T11:27:02.775Z",
-    updatedAt: "2025-11-11T11:27:02.775Z",
-  };
+  const { data: eventData, isLoading } = useGetEventDetails(String(id));
+  const { data: session, isLoading: isLoadingSession } = useMe();
+  const { mutateAsync: handlePayment, isPending, error } = useMakePayment();
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
     return {
       day: date.getDate(),
@@ -75,7 +40,7 @@ const EventDetail = () => {
     };
   };
 
-  const formatTime = (dateString: string) => {
+  const formatTime = (dateString: Date) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
@@ -90,6 +55,21 @@ const EventDetail = () => {
       minimumFractionDigits: 0,
     }).format(price);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+          <div className="text-sm text-gray-400">Memuat acara...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!eventData) {
+    return <div>No Event Details</div>;
+  }
 
   const startDate = formatDate(eventData.startTime);
 
@@ -150,6 +130,11 @@ const EventDetail = () => {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-20">
         <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-3">
           {/* Main Content */}
+          {error && (
+            <div className="rounded-xl border border-red-800 bg-red-900/30 p-4 text-red-300 lg:col-span-3">
+              <strong>Error:</strong> {error.message}
+            </div>
+          )}
           <div className="space-y-6 sm:space-y-8 lg:col-span-2">
             {/* Title and Description */}
             <div>
@@ -298,52 +283,20 @@ const EventDetail = () => {
                           </span>
                         </div>
                         {selectedTicket === ticket.id && (
-                          <CheckCircle className="h-4 w-4 text-indigo-400 sm:h-5 sm:w-5" />
+                          <CheckCircle className="h-4 w-4 text-teal-400 sm:h-5 sm:w-5" />
                         )}
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xl font-bold sm:text-2xl">
+                        <span className="text-xl font-bold text-white/90 sm:text-2xl">
                           {formatPrice(ticket.price)}
                         </span>
-                        <span className="text-xs text-gray-500 sm:text-sm">
+                        <span className="text-xs text-gray-300 sm:text-sm">
                           {ticket.quantity} tersedia
                         </span>
                       </div>
                     </div>
                   ))}
                 </div>
-
-                {selectedTicket && (
-                  <div className="mb-5 sm:mb-6">
-                    <label className="mb-2 block text-xs text-gray-400 sm:text-sm">
-                      Quantity
-                    </label>
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-800 text-lg font-bold transition-colors hover:bg-gray-700"
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        value={quantity}
-                        onChange={(e) =>
-                          setQuantity(
-                            Math.max(1, parseInt(e.target.value) || 1),
-                          )
-                        }
-                        className="h-10 w-full rounded-lg bg-gray-800 text-center font-semibold"
-                      />
-                      <button
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-800 text-lg font-bold transition-colors hover:bg-gray-700"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                )}
 
                 <button
                   disabled={!selectedTicket}
@@ -352,6 +305,30 @@ const EventDetail = () => {
                       ? "bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/30 hover:from-indigo-500 hover:to-purple-500"
                       : "cursor-not-allowed bg-gray-800 text-gray-600"
                   }`}
+                  onClick={async () => {
+                    if (!session || !selectedTicket) return;
+                    if (!eventData.isPaid) {
+                      await handlePayment({
+                        eventId: eventData.id,
+                        ticketId: selectedTicket,
+                        userId: session.id,
+                      });
+                      toast.success("Berhasil mendaftar acara!", {
+                        position: "top-center",
+                        richColors: true,
+                      });
+                      router.push("/");
+                    } else {
+                      const res = await handlePayment({
+                        eventId: eventData.id,
+                        ticketId: selectedTicket,
+                        userId: session.id,
+                      });
+                      if (res?.data.payment.redirectUrl) {
+                        router.push(res.data.payment.redirectUrl);
+                      }
+                    }
+                  }}
                 >
                   {selectedTicket ? "Daftar Sekarang" : "Pilih tiket dulu"}
                 </button>

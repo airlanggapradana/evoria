@@ -18,7 +18,12 @@ export const registerEvent = async (req: Request, res: Response, next: NextFunct
 
     // 1️⃣ Check if user already registered for this event
     const existing = await prisma.registration.findFirst({
-      where: {userId, eventId},
+      where: {
+        AND: [
+          {userId},
+          {eventId},
+        ]
+      },
     });
 
     if (existing) {
@@ -48,7 +53,7 @@ export const registerEvent = async (req: Request, res: Response, next: NextFunct
         userId,
         eventId,
         ticketId,
-        status: "PENDING",
+        status: event.isPaid ? "PENDING" : "CONFIRMED",
       },
     });
 

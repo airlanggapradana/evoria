@@ -42,8 +42,7 @@ export const getAllEvents = async (req: Request, res: Response, next: NextFuncti
           totalRegistrations,
           confirmedCount,
           remainingTickets:
-            event.tickets.reduce((sum, t) => sum + t.quantity, 0) -
-            confirmedCount,
+            event.tickets.reduce((sum, t) => sum + t.quantity, 0),
         },
         createdAt: event.createdAt,
       };
