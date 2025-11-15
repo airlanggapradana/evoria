@@ -85,19 +85,26 @@ export const useMe = () => {
   });
 };
 
-export const useGetAllEvents = () => {
+export const useGetAllEvents = (
+  page?: number,
+  limit?: number,
+  search?: string,
+) => {
   return useQuery({
-    queryKey: ["all-events"],
+    queryKey: ["all-events", { page, limit, search }],
     queryFn: async () => {
       try {
         return await axios
-          .get(`${env.NEXT_PUBLIC_BACKEND_URL}/event`, {
-            headers: {
-              "Content-Type": "application/json",
+          .get(
+            `${env.NEXT_PUBLIC_BACKEND_URL}/event${page && limit ? `?page=${page}&limit=${limit}` : search ? `search=${search}` : ""}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              method: "GET",
             },
-            method: "GET",
-          })
-          .then((res) => (res.data as AllEventsResponse).data);
+          )
+          .then((res) => res.data as AllEventsResponse);
       } catch (e) {
         if (e instanceof AxiosError) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access

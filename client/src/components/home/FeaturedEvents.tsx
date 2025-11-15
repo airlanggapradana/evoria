@@ -2,15 +2,15 @@
 import { Button } from "@/components/ui/button";
 import {
   Sparkles,
-  ArrowRight,
   Filter,
   Users,
   Clock,
   MapPin,
   TrendingUp,
   ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, Fragment } from "react";
 import { useGetAllEvents } from "@/utils/query";
 import Image from "next/image";
 import { getCookie } from "@/utils/cookies";
@@ -19,7 +19,11 @@ import { useRouter } from "next/navigation";
 const FeaturedEvents = () => {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const { data: events, isLoading } = useGetAllEvents();
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data, isLoading } = useGetAllEvents(currentPage);
+
+  const events = data?.data;
+  const pagination = data?.pagination;
 
   // Extract unique categories with memoization
   const categories = useMemo(() => {
@@ -66,15 +70,48 @@ const FeaturedEvents = () => {
     }).format(price);
   };
 
-  const categoryGradients: Record<string, string> = {
-    Entertainment: "from-pink-500 to-rose-500",
-    Business: "from-cyan-500 to-blue-500",
-    Technology: "from-emerald-500 to-teal-500",
-  };
-
   const getLowestPrice = (tickets: Array<{ price: number }>) => {
     if (!tickets || tickets.length === 0) return 0;
     return Math.min(...tickets.map((t) => t.price));
+  };
+
+  const handlePageChange = (page: number) => {
+    if (pagination && page >= 1 && page <= pagination.totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const renderPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxVisiblePages = 5;
+
+    if (!pagination) return pages;
+
+    if (pagination.totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= pagination.totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push("...");
+        pages.push(pagination.totalPages);
+      } else if (currentPage >= pagination.totalPages - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = pagination.totalPages - 3; i <= pagination.totalPages; i++)
+          pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push("...");
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push("...");
+        pages.push(pagination.totalPages);
+      }
+    }
+
+    return pages;
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -166,7 +203,7 @@ const FeaturedEvents = () => {
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <div
-                        className={`absolute inset-0 bg-gradient-to-br ${categoryGradients[event.category] ?? "from-gray-500 to-gray-500"} opacity-60 transition-opacity duration-300 group-hover:opacity-70`}
+                        className={`absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-500 opacity-40 transition-opacity duration-300 group-hover:opacity-70`}
                       ></div>
                       <div className="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
                         <div className="rounded-xl bg-white/10 px-5 py-4 text-center ring-1 ring-white/20 backdrop-blur-md transition-all duration-300 group-hover:bg-white/15 group-hover:ring-white/30 sm:rounded-2xl sm:px-6 sm:py-5 md:px-8 md:py-6">
@@ -297,25 +334,68 @@ const FeaturedEvents = () => {
           )}
         </div>
 
-        {/* View All CTA */}
-        <div className="mt-12 text-center sm:mt-14 md:mt-16">
-          <div className="inline-flex flex-col items-center gap-4 sm:gap-6">
-            <Button
-              size="lg"
-              className="group h-12 w-full bg-gradient-to-r from-teal-500 to-sky-500 px-6 text-sm font-semibold transition-all hover:scale-105 hover:from-teal-600 hover:to-sky-600 sm:h-14 sm:w-auto sm:px-8 sm:text-base"
-            >
-              Lihat Semua Acara
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1 sm:h-5 sm:w-5" />
-            </Button>
-            <p className="text-xs text-gray-400 sm:text-sm">
-              Lebih dari{" "}
-              <span className="font-semibold text-teal-400">
-                {events.length}+
+        {pagination && pagination.totalPages >= 1 && (
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <div className="text-sm text-gray-400">
+              Showing{" "}
+              <span className="font-semibold text-white">
+                {filteredEvents.length}
               </span>{" "}
-              acara menanti Anda.
-            </p>
+              of{" "}
+              <span className="font-semibold text-white">
+                {pagination.totalItems}
+              </span>{" "}
+              events
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`rounded-lg p-2 transition-all ${
+                  currentPage === 1
+                    ? "cursor-not-allowed bg-gray-800 text-gray-600"
+                    : "bg-gray-800 text-white hover:bg-gray-700"
+                }`}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+
+              <div className="flex items-center gap-1">
+                {renderPageNumbers().map((page, index) => (
+                  <Fragment key={index}>
+                    {page === "..." ? (
+                      <span className="px-3 py-2 text-gray-500">...</span>
+                    ) : (
+                      <button
+                        onClick={() => handlePageChange(page as number)}
+                        className={`rounded-lg px-4 py-2 font-semibold transition-all ${
+                          currentPage === page
+                            ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30"
+                            : "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )}
+                  </Fragment>
+                ))}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === pagination.totalPages}
+                className={`rounded-lg p-2 transition-all ${
+                  currentPage === pagination.totalPages
+                    ? "cursor-not-allowed bg-gray-800 text-gray-600"
+                    : "bg-gray-800 text-white hover:bg-gray-700"
+                }`}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Decorative Grid Pattern */}

@@ -1,24 +1,63 @@
 import {NextFunction, Request, Response} from "express";
 import prisma from "../../prisma/prisma";
 import {EventInput, eventSchema} from "../zod/schema";
+import {Prisma} from "../../generated/prisma";
 
 export const getAllEvents = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const events = await prisma.event.findMany({
-      include: {
-        organizer: {
-          select: {id: true, name: true, email: true},
-        },
-        tickets: {
-          select: {id: true, name: true, price: true, quantity: true},
-        },
-        registrations: {
-          select: {id: true, status: true},
-        },
-      },
-      orderBy: {createdAt: "desc"},
-    });
+    // 1. Ambil query params dan set default value
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.query.search as string; // Untuk title
+    const category = req.query.category as string;
+    const location = req.query.location as string;
+    // Handle boolean filter (karena query params selalu string)
+    const isPaid = req.query.isPaid === 'true' ? true : req.query.isPaid === 'false' ? false : undefined;
 
+    // 2. Hitung skip untuk pagination
+    const skip = (page - 1) * limit;
+
+    // 3. Build dynamic filter object
+    const whereClause: Prisma.EventWhereInput = {
+      ...(search && {
+        title: {
+          contains: search,
+          mode: "insensitive", // Case insensitive search
+        },
+      }),
+      ...(category && {category: category}),
+      ...(location && {
+        location: {
+          contains: location,
+          mode: "insensitive",
+        },
+      }),
+      ...(isPaid !== undefined && {isPaid: isPaid}),
+    };
+
+    // 4. Jalankan query Transaction (Get Data + Get Count) secara paralel agar efisien
+    const [events, totalCount] = await prisma.$transaction([
+      prisma.event.findMany({
+        where: whereClause,
+        take: limit,
+        skip: skip,
+        include: {
+          organizer: {
+            select: {id: true, name: true, email: true},
+          },
+          tickets: {
+            select: {id: true, name: true, price: true, quantity: true},
+          },
+          registrations: {
+            select: {id: true, status: true},
+          },
+        },
+        orderBy: {createdAt: "desc"},
+      }),
+      prisma.event.count({where: whereClause}),
+    ]);
+
+    // 5. Format data (Sama seperti logic Anda sebelumnya)
     const formatted = events.map((event) => {
       const totalRegistrations = event.registrations.length;
       const confirmedCount = event.registrations.filter(
@@ -48,9 +87,16 @@ export const getAllEvents = async (req: Request, res: Response, next: NextFuncti
       };
     });
 
+    // 6. Return response dengan metadata pagination
     return res.json({
       message: "Events fetched successfully",
       data: formatted,
+      pagination: {
+        totalItems: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page,
+        limit: limit,
+      },
     });
   } catch (err) {
     next(err);

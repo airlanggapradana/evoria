@@ -1,6 +1,7 @@
 export interface AllEventsResponse {
   message: string;
   data: Event[];
+  pagination: Pagination;
 }
 
 export interface Event {
@@ -37,4 +38,11 @@ export interface Ticket {
   name: string;
   price: number;
   quantity: number;
+}
+
+export interface Pagination {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  limit: number;
 }
