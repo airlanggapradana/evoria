@@ -72,14 +72,18 @@ const Navbar = () => {
                   <Calendar className="mr-2 h-4 w-4" />
                   My Tickets
                 </Button>
-
                 <Button
                   variant="ghost"
-                  size="icon"
-                  onClick={() => router.push("/profile")}
-                  className="h-10 w-10 text-gray-300 hover:bg-white/10 hover:text-white"
+                  size="sm"
+                  onClick={async () => {
+                    await deleteCookie("access_token");
+                    await deleteCookie("refresh_token");
+                    window.location.reload();
+                  }}
+                  className="h-10 text-gray-300 hover:bg-white/10 hover:text-white"
                 >
-                  <User className="h-5 w-5" />
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Keluar
                 </Button>
 
                 {data.role !== "USER" && (
