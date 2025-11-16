@@ -36,7 +36,6 @@ const SignUpPage = () => {
     defaultValues: {
       name: "",
       role: "USER",
-      studentId: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -121,25 +120,6 @@ const SignUpPage = () => {
                       placeholder="Masukkan email"
                       aria-invalid={fieldState.invalid}
                       type="email"
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-              <Controller
-                control={form.control}
-                name={"studentId"}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Student ID</FieldLabel>
-                    <Input
-                      {...field}
-                      id={field.name}
-                      placeholder="Masukkan NIM"
-                      aria-invalid={fieldState.invalid}
-                      type="text"
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />

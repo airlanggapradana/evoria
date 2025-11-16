@@ -19,7 +19,6 @@ async function main() {
         email: "rangga@example.com",
         password: "hashedpassword123",
         role: "ORGANIZER",
-        studentId: "22051104001",
       },
       {
         id: "USER-2",
@@ -27,7 +26,6 @@ async function main() {
         email: "farid@example.com",
         password: "hashedpassword123",
         role: "USER",
-        studentId: "22051104002",
       },
       {
         id: "USER-3",
@@ -35,7 +33,6 @@ async function main() {
         email: "siti@example.com",
         password: "hashedpassword123",
         role: "USER",
-        studentId: "22051104003",
       },
       {
         id: "USER-4",
@@ -43,7 +40,6 @@ async function main() {
         email: "dewi@example.com",
         password: "hashedpassword123",
         role: "USER",
-        studentId: "22051104004",
       },
     ],
     skipDuplicates: true,

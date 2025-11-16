@@ -20,7 +20,6 @@ model User {
   email         String         @unique
   password      String
   role          Role           @default(USER)
-  studentId     String? // NIM kalau mahasiswa
   events        Event[]        @relation("EventOrganizer")
   registrations Registration[]
   createdAt     DateTime       @default(now())

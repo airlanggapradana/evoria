@@ -11,7 +11,6 @@ export const registerSchema = z
     role: z.enum(["USER", "ADMIN", "ORGANIZER"], {
       message: "Role must be either USER ,ADMIN or ORGANIZER",
     }),
-    studentId: z.string({ message: "Student ID must be a string" }),
     email: z.string().email("Invalid email address"),
     password: z.string().min(6, "Password must be at least 6 characters long"),
     confirmPassword: z

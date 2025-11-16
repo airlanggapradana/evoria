@@ -3,8 +3,8 @@ import prisma from "../../prisma/prisma";
 import midtransClient from "midtrans-client";
 import {env} from "../env";
 import {RegistrationInput, registrationSchema} from "../zod/schema";
-import QRCode from 'qrcode';
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
+import {nanoid} from 'nanoid';
 
 const snap = new midtransClient.Snap({
   isProduction: env.IS_PRODUCTION === 'true',
@@ -57,21 +57,16 @@ export const registerEvent = async (req: Request, res: Response, next: NextFunct
       },
     });
 
-    // 2️⃣ Generate QR code berdasarkan id registrasi
-    const token = jwt.sign(
-      {registrationId: registration.id},
-      env.JWT_SECRET,
-      {expiresIn: "1h"}
-    );
-
-    const frontendUrl = `${env.FRONTEND_URL}?token=${token}`;
-
-    const qrCodeDataUrl = await QRCode.toDataURL(frontendUrl, {errorCorrectionLevel: "M"});
+    // 2️⃣ Generate QR code
+    const qrCodeData = nanoid(24);
+    const qrToken = jwt.sign({
+      qrToken: qrCodeData,
+    }, env.JWT_SECRET, {expiresIn: '30d'});
 
     // 3️⃣ Simpan QR code ke database
     await prisma.registration.update({
       where: {id: registration.id},
-      data: {qrCode: qrCodeDataUrl},
+      data: {qrCode: qrToken},
     });
 
     // 4️⃣ Reduce ticket stock
@@ -87,7 +82,7 @@ export const registerEvent = async (req: Request, res: Response, next: NextFunct
         data: {
           registration: {
             ...registration,
-            qrCode: qrCodeDataUrl,
+            qrCode: qrToken,
           },
           event: {
             title: event.title,

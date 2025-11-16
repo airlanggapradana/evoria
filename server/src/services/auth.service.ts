@@ -68,7 +68,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const {email, password, name, role, studentId}: RegisterInput = registerSchema.parse(req.body);
+    const {email, password, name, role}: RegisterInput = registerSchema.parse(req.body);
     const registerProcess = await prisma.$transaction(async (tx) => {
       const existingUser = await tx.user.findUnique({
         where: {email}
@@ -82,7 +82,6 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         data: {
           id: 'USER-' + Date.now(),
           role,
-          studentId,
           name,
           email,
           password: hashedPassword
