@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { deleteCookie, getCookie } from "@/utils/cookies";
 import { useMe } from "@/utils/query";
+import { PiSquaresFour } from "react-icons/pi";
 
 const Navbar = () => {
   const router = useRouter();
@@ -63,15 +64,28 @@ const Navbar = () => {
 
             {cookies && data ? (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.push("/my-tickets")}
-                  className="h-10 text-gray-300 hover:bg-white/10 hover:text-white"
-                >
-                  <Calendar className="mr-2 h-4 w-4" />
-                  My Tickets
-                </Button>
+                {data.role === "USER" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push("/my-tickets")}
+                    className="h-10 text-gray-300 hover:bg-white/10 hover:text-white"
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    My Tickets
+                  </Button>
+                )}
+                {data.role !== "USER" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push("/dashboard")}
+                    className="h-10 text-gray-300 hover:bg-white/10 hover:text-white"
+                  >
+                    <PiSquaresFour className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -85,17 +99,6 @@ const Navbar = () => {
                   <LogOut className="mr-2 h-4 w-4" />
                   Keluar
                 </Button>
-
-                {data.role !== "USER" && (
-                  <Button
-                    size="sm"
-                    onClick={() => router.push("/create-event")}
-                    className="h-10 bg-gradient-to-r from-teal-500 to-purple-500 px-6 font-semibold hover:from-teal-600 hover:to-purple-600"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Event
-                  </Button>
-                )}
               </>
             ) : (
               <>
