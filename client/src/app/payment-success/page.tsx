@@ -67,7 +67,7 @@ const PaymentSuccessPage = () => {
       e_wallet: "E-Wallet",
       credit_card: "Credit Card",
     };
-    // @ts-ignore
+    // @ts-expect-error
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return methods[method] ?? method.toUpperCase();
   };
@@ -297,7 +297,7 @@ const PaymentSuccessPage = () => {
                   Confirmation Email Sent
                 </h3>
                 <p className="text-sm text-gray-400">
-                  We've sent a confirmation email to{" "}
+                  We&#39;ve sent a confirmation email to{" "}
                   <span className="font-semibold text-white">
                     {registration.user.email}
                   </span>{" "}
@@ -316,8 +316,8 @@ const PaymentSuccessPage = () => {
               <div className="flex-1">
                 <h3 className="mb-1 text-lg font-bold">Event Reminder</h3>
                 <p className="text-sm text-gray-400">
-                  Don't forget to arrive 30 minutes early. Bring your ticket QR
-                  code for quick check-in at the entrance.
+                  Don&#39;t forget to arrive 30 minutes early. Bring your ticket
+                  QR code for quick check-in at the entrance.
                 </p>
               </div>
             </div>
