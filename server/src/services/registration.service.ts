@@ -277,7 +277,6 @@ export const getRegistrationDetails = async (
             id: true,
             name: true,
             email: true,
-            studentId: true,
           },
         },
         event: {
@@ -347,5 +346,44 @@ export const getRegistrationDetails = async (
     });
   } catch (err) {
     next(err);
+  }
+};
+
+export const getSingleRegistrationDetail = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const {id} = req.params;
+
+    const registration = await prisma.registration.findUnique({
+      where: {id: String(id)},
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        event: {
+          include: {
+            tickets: true,
+          },
+        },
+        ticket: true,
+        payment: true,
+      },
+    });
+
+    if (!registration) {
+      return res.status(404).json({
+        message: "Registration not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Registration detail fetched successfully",
+      data: registration,
+    });
+  } catch (error) {
+    next(error);
   }
 };

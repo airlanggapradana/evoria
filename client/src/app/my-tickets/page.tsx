@@ -21,6 +21,7 @@ import { useGetUserDetails } from "@/utils/query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MyTicketSkeleton from "@/components/skeletons/my-tickets-skeleton";
+import QRCode from "react-qr-code";
 
 const MyTicketsPage = () => {
   const router = useRouter();
@@ -174,10 +175,6 @@ const MyTicketsPage = () => {
                 <div className="flex items-center gap-2 text-gray-400">
                   <Mail className="h-4 w-4" />
                   <span className="text-sm">{userData.data.email}</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-400">
-                  <GraduationCap className="h-4 w-4" />
-                  <span className="text-sm">{userData.data.studentId}</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-400">
                   <User className="h-4 w-4" />
@@ -342,9 +339,6 @@ const MyTicketsPage = () => {
                         <span className="hidden sm:inline">Show QR</span>
                         <span className="sm:hidden">QR Code</span>
                       </button>
-                      <button className="flex-1 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold shadow-lg shadow-indigo-500/30 transition-all hover:from-indigo-500 hover:to-purple-500 sm:flex-none sm:rounded-xl sm:px-6 sm:py-3">
-                        View Details
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -404,11 +398,25 @@ const MyTicketsPage = () => {
               {/* QR Code */}
               <div className="flex items-center justify-center rounded-2xl bg-white p-8">
                 <div className="text-center">
-                  <img
-                    src={selectedRegistration.qrCode}
-                    alt="QR Code"
-                    className="mx-auto h-48 w-48"
-                  />
+                  <div
+                    style={{
+                      height: "auto",
+                      margin: "0 auto",
+                      maxWidth: 128,
+                      width: "100%",
+                    }}
+                  >
+                    <QRCode
+                      size={256}
+                      style={{
+                        height: "auto",
+                        maxWidth: "100%",
+                        width: "100%",
+                      }}
+                      value={selectedRegistration.qrCode}
+                      viewBox={`0 0 256 256`}
+                    />
+                  </div>
                   <p className="mt-4 text-xs font-semibold text-gray-800">
                     ID: {selectedRegistration.registrationId}
                   </p>

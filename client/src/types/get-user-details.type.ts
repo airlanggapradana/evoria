@@ -8,7 +8,6 @@ export interface User {
   name: string;
   email: string;
   role: string;
-  studentId: string;
   events: EventElement[] | null;
 }
 

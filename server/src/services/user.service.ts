@@ -77,7 +77,6 @@ export const getUserDetails = async (req: Request, res: Response, next: NextFunc
         name: user.name,
         email: user.email,
         role: user.role,
-        studentId: user.studentId,
         events: user.registrations.map((reg) => ({
           registrationId: reg.id,
           status: reg.status,

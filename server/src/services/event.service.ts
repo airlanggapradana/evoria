@@ -87,6 +87,17 @@ export const getAllEvents = async (req: Request, res: Response, next: NextFuncti
       };
     });
 
+    if (formatted.length === 0) {
+      return res.status(200).json({
+        message: "No events found", data: [], pagination: {
+          totalItems: 0,
+          totalPages: 0,
+          currentPage: page,
+          limit: limit,
+        }
+      });
+    }
+
     // 6. Return response dengan metadata pagination
     return res.json({
       message: "Events fetched successfully",

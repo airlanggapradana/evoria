@@ -308,11 +308,17 @@ const EventDetail = () => {
                   onClick={async () => {
                     if (!session || !selectedTicket) return;
                     if (!eventData.isPaid) {
-                      await handlePayment({
+                      const res = await handlePayment({
                         eventId: eventData.id,
                         ticketId: selectedTicket,
                         userId: session.id,
                       });
+                      if (res) {
+                        localStorage.setItem(
+                          "registrationId",
+                          res.data.registration.id,
+                        );
+                      }
                       toast.success("Berhasil mendaftar acara!", {
                         position: "top-center",
                         richColors: true,
@@ -324,6 +330,12 @@ const EventDetail = () => {
                         ticketId: selectedTicket,
                         userId: session.id,
                       });
+                      if (res) {
+                        localStorage.setItem(
+                          "registrationId",
+                          res.data.registration.id,
+                        );
+                      }
                       if (res?.data.payment.redirectUrl) {
                         router.push(res.data.payment.redirectUrl);
                       }

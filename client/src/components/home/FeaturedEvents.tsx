@@ -117,7 +117,52 @@ const FeaturedEvents = () => {
   if (isLoading) return <div>Loading...</div>;
 
   if (!events || events.length === 0) {
-    return <div>No events available</div>;
+    return (
+      <div className="flex items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-20">
+        <div className="w-full max-w-2xl rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/80 to-gray-800/70 p-8 text-center backdrop-blur-md">
+          <Sparkles className="mx-auto mb-4 h-9 w-9 text-teal-400" />
+          <h3 className="mb-2 text-2xl font-semibold text-white">
+            No events available
+          </h3>
+          <p className="mb-6 text-sm text-gray-400">
+            There are currently no events to show. Try exploring other
+            categories or refresh the list.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button
+              onClick={() => {
+                setSelectedCategory("All");
+                setCurrentPage(1);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="rounded-full bg-gradient-to-r from-teal-500 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg"
+            >
+              Explore All Events
+            </Button>
+
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setCurrentPage(1);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="h-9 rounded-full px-4 py-2 text-sm font-medium text-gray-300"
+            >
+              Refresh
+            </Button>
+
+            <Button
+              variant="ghost"
+              onClick={() => router.push("/events")}
+              className="h-9 rounded-full px-4 py-2 text-sm font-medium text-gray-300"
+            >
+              Browse Events Page
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
