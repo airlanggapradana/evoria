@@ -206,10 +206,15 @@ export const checkInUser = async (req: Request, res: Response, next: NextFunctio
     return res.status(400).json({message: "Token missing"});
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as { qrToken: string };
+    const decoded = jwt.verify(token, env.JWT_SECRET) as { qrToken: string, registrationId: string };
 
     const registration = await prisma.registration.findFirst({
-      where: {qrCode: decoded.qrToken},
+      where: {
+        AND: [
+          {id: decoded.registrationId},
+          {qrCode: decoded.qrToken}
+        ]
+      },
       include: {user: true, event: true},
     });
 

@@ -12,13 +12,13 @@ import {
   MapPin,
   Ticket,
   Users,
+  XIcon,
 } from "lucide-react";
-import { useGetRegistrationDetails } from "@/utils/query";
+import { useCheckInUser, useGetRegistrationDetails } from "@/utils/query";
 import Image from "next/image";
 
 const CheckInPage = () => {
   const [isCheckedIn, setIsCheckedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const searchParams = useSearchParams();
@@ -32,6 +32,7 @@ const CheckInPage = () => {
   const { data, isLoading: isLoadingRegistration } = useGetRegistrationDetails(
     decoded.registrationId,
   );
+  const { mutateAsync: handleCheckIn, isPending } = useCheckInUser();
 
   const registrationData = data?.data;
 
@@ -59,22 +60,6 @@ const CheckInPage = () => {
       currency: "IDR",
       minimumFractionDigits: 0,
     }).format(price);
-  };
-
-  const handleCheckIn = async () => {
-    setIsLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsCheckedIn(true);
-      setShowSuccess(true);
-
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 3000);
-    }, 1500);
   };
 
   if (!registrationData) {
@@ -143,7 +128,7 @@ const CheckInPage = () => {
 
             {/* Status Badge */}
             <div className="absolute top-4 right-4">
-              {isCheckedIn ? (
+              {registrationData.checkedIn ? (
                 <div className="bg-opacity-90 flex items-center gap-2 rounded-full bg-green-500 px-4 py-2 backdrop-blur-md">
                   <CheckCircle className="h-5 w-5" />
                   <span className="font-bold">Checked In</span>
@@ -268,7 +253,7 @@ const CheckInPage = () => {
             </div>
 
             {/* Check-in Status */}
-            {isCheckedIn ? (
+            {registrationData.checkedIn ? (
               <div className="bg-opacity-20 border-opacity-30 mb-6 rounded-xl border border-green-500 bg-green-900 p-6">
                 <div className="flex items-start gap-4">
                   <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-500">
@@ -312,30 +297,47 @@ const CheckInPage = () => {
 
             {/* Action Button */}
             <button
-              onClick={handleCheckIn}
-              disabled={isCheckedIn || isLoading}
+              onClick={async () => {
+                const res = await handleCheckIn(token!);
+                if (res) {
+                  setIsCheckedIn(true);
+                  setShowSuccess(true);
+                  setTimeout(() => {
+                    setShowSuccess(false);
+                  }, 3000);
+                }
+              }}
+              disabled={registrationData.checkedIn || isPending}
               className={`flex w-full items-center justify-center gap-3 rounded-xl px-8 py-5 text-lg font-bold shadow-lg transition-all ${
-                isCheckedIn
+                registrationData.checkedIn ||
+                new Date(registrationData.event.startTime).toDateString() !==
+                  new Date().toDateString()
                   ? "cursor-not-allowed bg-gray-700 text-gray-500"
-                  : isLoading
+                  : isPending
                     ? "cursor-wait bg-indigo-600"
                     : "bg-gradient-to-r from-indigo-600 to-purple-600 shadow-indigo-500/30 hover:from-indigo-500 hover:to-purple-500"
               }`}
             >
-              {isLoading ? (
+              {isPending ? (
                 <>
                   <Loader className="h-6 w-6 animate-spin" />
                   Checking In...
                 </>
-              ) : isCheckedIn ? (
+              ) : registrationData.checkedIn ? (
                 <>
                   <CheckCircle className="h-6 w-6" />
                   Sudah Checked In
                 </>
+              ) : new Date(registrationData.event.startTime).toDateString() !==
+                new Date().toDateString() ? (
+                <>
+                  <XIcon className="h-6 w-6" />
+                  Belum Saatnya Check-In
+                </>
               ) : (
                 <>
                   <CheckCircle className="h-6 w-6" />
-                  Check In Sekarang
+                  Check-In Sekarang
                 </>
               )}
             </button>

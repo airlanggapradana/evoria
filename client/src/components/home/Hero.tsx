@@ -28,9 +28,9 @@ const Hero = () => {
 
               <div className="space-y-4">
                 <h1 className="text-5xl leading-tight font-extrabold text-white sm:text-6xl">
-                  Temukan
+                  Beli Tiket Event Sekarang
                   <span className="block bg-gradient-to-r from-teal-400 to-sky-400 bg-clip-text text-transparent">
-                    Pengalaman Terbaikmu
+                    Jauh Lebih Mudah
                   </span>
                 </h1>
                 <p className="text-base text-gray-300 sm:text-lg md:text-xl">

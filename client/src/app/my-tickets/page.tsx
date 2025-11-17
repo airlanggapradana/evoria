@@ -83,7 +83,7 @@ const MyTicketsPage = () => {
     const upperStatus = status.toUpperCase();
     switch (upperStatus) {
       case "CONFIRMED":
-        return "bg-teal-500 bg-opacity-20 text-teal-200 border-teal-500";
+        return "bg-teal-500 bg-opacity-20 text-teal-100 border-teal-500";
       case "PENDING":
         return "bg-yellow-500 bg-opacity-20 text-yellow-400 border-yellow-500";
       case "CANCELLED":
@@ -149,9 +149,9 @@ const MyTicketsPage = () => {
   const filteredEvents = (userData.data.events ?? []).filter((reg) => {
     if (selectedTab === "all") return true;
     if (selectedTab === "upcoming")
-      return new Date(reg.event.startTime) > new Date();
+      return new Date(reg.event.startTime) > new Date() && !reg.checkedIn;
     if (selectedTab === "past")
-      return new Date(reg.event.startTime) <= new Date();
+      return new Date(reg.event.startTime) <= new Date() && reg.checkedIn;
     return true;
   });
 
@@ -239,7 +239,7 @@ const MyTicketsPage = () => {
                 {/* Event Image */}
                 <div className="relative md:w-1/3">
                   <Image
-                    src={`https://picsum.photos/seed/${registration.registrationId}/700/700`}
+                    src={`https://picsum.photos/seed/${registration.registrationId}/1920/1080`}
                     alt={registration.event.title}
                     width={400}
                     height={400}
@@ -259,7 +259,7 @@ const MyTicketsPage = () => {
                         </span>
                       </div>
                       {registration.checkedIn && (
-                        <div className="bg-opacity-20 mt-4 inline-flex items-center gap-2 rounded-full border border-green-500 bg-green-500 px-4 py-2 text-green-400 backdrop-blur-md">
+                        <div className="bg-opacity-20 mt-4 inline-flex items-center gap-2 rounded-full border border-green-500 bg-green-500 px-4 py-2 text-green-100 backdrop-blur-md">
                           <CheckCircle className="h-4 w-4" />
                           <span className="text-sm font-semibold">
                             Checked In
