@@ -171,6 +171,7 @@ export const useMakePayment = () => {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["all-events"] });
       await queryClient.invalidateQueries({ queryKey: ["user-details"] });
+      await queryClient.invalidateQueries({ queryKey: ["organizer-details"] });
     },
   });
 };

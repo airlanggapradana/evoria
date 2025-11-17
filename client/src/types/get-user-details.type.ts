@@ -15,6 +15,7 @@ export interface EventElement {
   registrationId: string;
   status: string;
   checkedIn: boolean;
+  qrCodeUrl: string;
   qrCode: string;
   createdAt: Date;
   event: EventEvent;

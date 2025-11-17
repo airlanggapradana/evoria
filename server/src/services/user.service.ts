@@ -81,6 +81,7 @@ export const getUserDetails = async (req: Request, res: Response, next: NextFunc
           registrationId: reg.id,
           status: reg.status,
           checkedIn: reg.checkedIn,
+          qrCodeUrl: reg.qrCodeUrl,
           qrCode: reg.qrCode,
           createdAt: reg.createdAt,
 

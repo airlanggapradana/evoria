@@ -61,12 +61,14 @@ export const registerEvent = async (req: Request, res: Response, next: NextFunct
     const qrCodeData = nanoid(24);
     const qrToken = jwt.sign({
       qrToken: qrCodeData,
+      registrationId: registration.id
     }, env.JWT_SECRET, {expiresIn: '30d'});
+    const frontendUrl = `${env.FRONTEND_URL}/checkin?token=${qrToken}`;
 
     // 3️⃣ Simpan QR code ke database
     await prisma.registration.update({
       where: {id: registration.id},
-      data: {qrCode: qrToken},
+      data: {qrCodeUrl: frontendUrl, qrCode: qrCodeData},
     });
 
     // 4️⃣ Reduce ticket stock
@@ -82,7 +84,7 @@ export const registerEvent = async (req: Request, res: Response, next: NextFunct
         data: {
           registration: {
             ...registration,
-            qrCode: qrToken,
+            qrCode: frontendUrl,
           },
           event: {
             title: event.title,
@@ -204,10 +206,10 @@ export const checkInUser = async (req: Request, res: Response, next: NextFunctio
     return res.status(400).json({message: "Token missing"});
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as { registrationId: string };
+    const decoded = jwt.verify(token, env.JWT_SECRET) as { qrToken: string };
 
-    const registration = await prisma.registration.findUnique({
-      where: {id: decoded.registrationId},
+    const registration = await prisma.registration.findFirst({
+      where: {qrCode: decoded.qrToken},
       include: {user: true, event: true},
     });
 
@@ -217,7 +219,7 @@ export const checkInUser = async (req: Request, res: Response, next: NextFunctio
       return res.status(400).json({message: "Already checked in"});
 
     await prisma.registration.update({
-      where: {id: decoded.registrationId},
+      where: {id: registration.id},
       data: {checkedIn: true},
     });
 

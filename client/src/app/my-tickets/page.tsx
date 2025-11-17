@@ -425,7 +425,7 @@ const MyTicketsPage = () => {
                         maxWidth: "100%",
                         width: "100%",
                       }}
-                      value={selectedRegistration.qrCode}
+                      value={selectedRegistration.qrCodeUrl}
                       viewBox={`0 0 256 256`}
                     />
                   </div>

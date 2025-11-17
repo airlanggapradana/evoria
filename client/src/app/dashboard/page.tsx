@@ -202,7 +202,10 @@ const OrganizerDashboard = () => {
 
             {/* Quick Actions */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-              <button className="group rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-4 text-left transition-all hover:border-indigo-500 sm:p-6">
+              <button
+                className="group rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-4 text-left transition-all hover:border-indigo-500 sm:p-6"
+                onClick={() => router.push("/dashboard/create-event")}
+              >
                 <Plus className="mb-2 h-6 w-6 text-indigo-400 transition-transform group-hover:scale-110 sm:mb-3 sm:h-8 sm:w-8" />
                 <h3 className="mb-1 text-sm font-bold sm:text-base">
                   Create New Event

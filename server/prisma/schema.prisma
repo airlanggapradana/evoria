@@ -65,7 +65,8 @@ model Registration {
   ticketId  String?
   payment   Payment?
   status    RegistrationStatus @default(PENDING)
-  qrCode    String? // kode unik tiket (bisa di-generate)
+  qrCodeUrl String?
+  qrCode    String?
   checkedIn Boolean            @default(false)
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
