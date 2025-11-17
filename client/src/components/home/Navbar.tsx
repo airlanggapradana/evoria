@@ -169,60 +169,59 @@ const Navbar = () => {
                   </div>
 
                   {/* Mobile Actions */}
-                  <div className="space-y-2 border-t border-white/10 pt-4">
+                  <div className="space-y-3 border-t border-white/10 pt-4">
                     {cookies && data ? (
                       <>
+                        {data.role === "USER" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => router.push("/my-tickets")}
+                            className="h-12 w-full justify-start rounded-md px-4 text-gray-200 transition hover:bg-white/5 hover:text-white"
+                          >
+                            <Calendar className="mr-3 h-4 w-4" />
+                            My Tickets
+                          </Button>
+                        )}
+                        {data.role !== "USER" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => router.push("/dashboard")}
+                            className="h-12 w-full justify-start rounded-md px-4 text-gray-200 transition hover:bg-white/5 hover:text-white"
+                          >
+                            <PiSquaresFour className="mr-3 h-4 w-4" />
+                            Dashboard
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
-                          onClick={() => router.push("/my-tickets")}
-                          className="w-full justify-start text-gray-300 hover:bg-white/10 hover:text-white"
-                        >
-                          <Calendar className="mr-2 h-4 w-4" />
-                          My Tickets
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={() => router.push("/profile")}
-                          className="w-full justify-start text-gray-300 hover:bg-white/10 hover:text-white"
-                        >
-                          <User className="mr-2 h-4 w-4" />
-                          Profile
-                        </Button>
-                        <Button
-                          variant="ghost"
+                          size="sm"
                           onClick={async () => {
                             await deleteCookie("access_token");
                             await deleteCookie("refresh_token");
                             window.location.reload();
                           }}
-                          className="w-full justify-start text-gray-300 hover:bg-white/10 hover:text-white"
+                          className="h-12 w-full justify-start rounded-md px-4 text-gray-200 transition hover:bg-white/5 hover:text-white"
                         >
-                          <LogOut className="mr-2 h-4 w-4" />
-                          Logout
+                          <LogOut className="mr-3 h-4 w-4" />
+                          Keluar
                         </Button>
-                        {data.role !== "USER" && (
-                          <Button
-                            onClick={() => router.push("/create-event")}
-                            className="w-full bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600"
-                          >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Create Event
-                          </Button>
-                        )}
                       </>
                     ) : (
                       <>
                         <Button
                           variant="ghost"
+                          size="sm"
                           onClick={() => router.push("/auth/sign-in")}
-                          className="w-full justify-start text-gray-300 hover:bg-white/10 hover:text-white"
+                          className="h-12 w-full justify-start rounded-md px-4 text-gray-200 transition hover:bg-white/5 hover:text-white"
                         >
-                          <User className="mr-2 h-4 w-4" />
                           Sign In
                         </Button>
                         <Button
+                          size="sm"
                           onClick={() => router.push("/auth/sign-up")}
-                          className="w-full bg-gradient-to-r from-teal-500 to-sky-500 hover:from-teal-600 hover:to-sky-600"
+                          className="h-12 w-full rounded-md bg-gradient-to-r from-teal-500 to-sky-500 px-4 font-semibold text-white transition hover:from-teal-600 hover:to-sky-600"
                         >
                           Sign Up
                         </Button>

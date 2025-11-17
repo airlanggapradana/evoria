@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   User,
   Mail,
@@ -22,6 +22,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MyTicketSkeleton from "@/components/skeletons/my-tickets-skeleton";
 import QRCode from "react-qr-code";
+import { getCookie } from "@/utils/cookies";
 
 const MyTicketsPage = () => {
   const router = useRouter();
@@ -29,6 +30,17 @@ const MyTicketsPage = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedRegistration, setSelectedRegistration] =
     useState<EventElement | null>(null);
+
+  useEffect(() => {
+    const fetchCookies = async () => {
+      const accessToken = await getCookie("access_token");
+      const refreshToken = await getCookie("refresh_token");
+      if (!accessToken || !refreshToken) {
+        router.push("/auth/sign-in");
+      }
+    };
+    void fetchCookies();
+  }, [router]);
 
   const handleShowQR = (registration: EventElement) => {
     setSelectedRegistration(registration);

@@ -13,6 +13,7 @@ import type { EventDetailsResponse } from "@/types/event-details.type";
 import type { PaymentResponse } from "@/types/payment.type";
 import type { GetUserDetailsResponse } from "@/types/get-user-details.type";
 import type { GetRegistrationDetailsType } from "@/types/get-registration-details.type";
+import type { GetOrganizerDetailsResponse } from "@/types/get-organizer-details.type";
 
 export const useRegister = () => {
   return useMutation({
@@ -223,6 +224,33 @@ export const useGetRegistrationDetails = (registrationId: string) => {
           throw new Error(
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
             e.response?.data.message ?? "Fetching registration details failed",
+          );
+        }
+        throw new Error("An unexpected error occurred");
+      }
+    },
+  });
+};
+
+export const useGetOrganizerDetails = () => {
+  return useQuery({
+    queryKey: ["organizer-details"],
+    queryFn: async () => {
+      try {
+        return await axios
+          .get(`${env.NEXT_PUBLIC_BACKEND_URL}/organizer`, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            method: "GET",
+            withCredentials: true,
+          })
+          .then((res) => res.data as GetOrganizerDetailsResponse);
+      } catch (e) {
+        if (e instanceof AxiosError) {
+          throw new Error(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
+            e.response?.data.message ?? "Fetching organizer details failed",
           );
         }
         throw new Error("An unexpected error occurred");

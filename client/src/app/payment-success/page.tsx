@@ -16,6 +16,7 @@ import { useGetRegistrationDetails } from "@/utils/query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import SuccessSkeleton from "@/components/skeletons/success-skeleton";
+import { getCookie } from "@/utils/cookies";
 
 const PaymentSuccessPage = () => {
   const router = useRouter();
@@ -26,13 +27,20 @@ const PaymentSuccessPage = () => {
   const { data, isLoading, error } = useGetRegistrationDetails(registrationId!);
 
   useEffect(() => {
+    const fetchData = async () => {
+      const accessToken = await getCookie("accessToken");
+      if (!accessToken) {
+        router.push("/auth/sign-in");
+      }
+    };
+    void fetchData();
     const regId = localStorage.getItem("registrationId");
     if (regId) {
       setRegistrationId(regId);
     }
     setAnimated(true);
     setTimeout(() => setShowConfetti(false), 3000);
-  }, []);
+  }, [router]);
 
   const formatDate = (dateString: Date) => {
     const date = new Date(dateString);

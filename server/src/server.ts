@@ -7,6 +7,7 @@ import eventRouter from "./controllers/event.controller";
 import registrationRouter from "./controllers/registration.controller";
 import {env} from "./env";
 import userRouter from "./controllers/user.controller";
+import organizerRouter from "./controllers/organizer.controller";
 
 const app: Application = express();
 
@@ -24,6 +25,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/event', eventRouter);
 app.use('/api/registration', registrationRouter);
 app.use('/api/user', userRouter);
+app.use('/api/organizer', organizerRouter)
 
 app.use(errorHandler)
 
