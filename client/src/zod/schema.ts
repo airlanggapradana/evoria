@@ -78,7 +78,6 @@ export const eventDetailsSchema = z.object({
   endTime: z.string().min(1, "End time is required"),
   bannerUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   isPaid: z.boolean(),
-  isApproved: z.boolean().optional(),
 });
 
 export const ticketSchema = z.object({

@@ -4,6 +4,7 @@ import { type Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import TanstackProvider from "@/utils/TanstackProvider";
+import { EdgeStoreProvider } from "@/lib/edgestore";
 
 export const metadata: Metadata = {
   title: "LOKET - Your Event Ticketing Platform",
@@ -22,10 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakartaSans.variable}`}>
       <TanstackProvider>
-        <body>
-          {children}
-          <Toaster />
-        </body>
+        <EdgeStoreProvider>
+          <body>
+            {children}
+            <Toaster />
+          </body>
+        </EdgeStoreProvider>
       </TanstackProvider>
     </html>
   );

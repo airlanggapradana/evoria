@@ -199,7 +199,6 @@ export const createEvent = async (req: Request, res: Response, next: NextFunctio
   try {
     const {
       title,
-      isApproved,
       bannerUrl,
       endTime,
       startTime,
@@ -228,7 +227,6 @@ export const createEvent = async (req: Request, res: Response, next: NextFunctio
         data: {
           id: `evt_${Date.now()}`,
           title,
-          isApproved,
           bannerUrl,
           endTime: new Date(endTime),
           startTime: new Date(startTime),

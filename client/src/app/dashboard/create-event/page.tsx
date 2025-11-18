@@ -1,9 +1,9 @@
 "use client";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { create } from "zustand";
-import { useMe } from "@/utils/query";
+import { useCreateEvent, useMe } from "@/utils/query";
 import {
   type EventBasic,
   eventBasicSchema,
@@ -16,6 +16,14 @@ import {
 import { GrNotes } from "react-icons/gr";
 import { CiSettings } from "react-icons/ci";
 import { LuTicket } from "react-icons/lu";
+import { useEdgeStore } from "@/lib/edgestore";
+import {
+  UploaderProvider,
+  type UploadFn,
+} from "@/components/upload/uploader-provider";
+import { SingleImageDropzone } from "@/components/upload/single-image";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface EventFormStore {
   step: number;
@@ -30,7 +38,6 @@ const useEventFormStore = create<EventFormStore>((set) => ({
   step: 1,
   formData: {
     isPaid: false,
-    isApproved: false,
     tickets: [],
   },
   setStep: (step) => set({ step }),
@@ -39,14 +46,19 @@ const useEventFormStore = create<EventFormStore>((set) => ({
   resetForm: () =>
     set({
       step: 1,
-      formData: { isPaid: false, isApproved: false, tickets: [] },
+      formData: { isPaid: false, tickets: [] },
     }),
 }));
 
 export default function CreateEventPage() {
+  const router = useRouter();
   const { data, isLoading } = useMe();
+  const { edgestore } = useEdgeStore();
+  const [imageUrl, setImageUrl] = React.useState<string | null>(null);
   const { step, formData, setStep, updateFormData, resetForm } =
     useEventFormStore();
+
+  const { mutateAsync: handleAddEvent, isPending } = useCreateEvent();
 
   // Initialize organizerId when user data is loaded
   useEffect(() => {
@@ -63,16 +75,57 @@ export default function CreateEventPage() {
   const handleBack = () => {
     setStep(step - 1);
   };
+  const uploadFn: UploadFn = React.useCallback(
+    async ({ file, onProgressChange, signal }) => {
+      const res = await edgestore.publicFiles.upload({
+        file,
+        signal,
+        onProgressChange,
+        options: {
+          temporary: true,
+        },
+      });
+      // you can run some server action or api here
+      // to add the necessary data to your database
+      setImageUrl(res.url);
+      return res;
+    },
+    [edgestore],
+  );
 
   const handleSubmit = async (data: Partial<FullEvent>) => {
+    if (!imageUrl) {
+      toast.error("Please upload a banner image before submitting.", {
+        richColors: true,
+        position: "top-center",
+      });
+    }
+    await edgestore.publicFiles.confirmUpload({
+      url: imageUrl!,
+    });
     const finalData = {
       ...formData,
       ...data,
       organizerId: formData.organizerId ?? data.organizerId,
+      bannerUrl: imageUrl,
     };
-
-    console.log(finalData);
-    resetForm();
+    try {
+      await handleAddEvent(finalData as FullEvent);
+      toast.success("Event created successfully!", {
+        richColors: true,
+        position: "top-center",
+      });
+      resetForm();
+      setImageUrl(null);
+      router.push("/dashboard");
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(`Failed to create event. ${error.message}`, {
+          richColors: true,
+          position: "top-center",
+        });
+      }
+    }
   };
 
   const steps = [
@@ -151,6 +204,7 @@ export default function CreateEventPage() {
               onNext={handleNext}
               onBack={handleBack}
               initialData={formData}
+              uploadFn={uploadFn}
             />
           )}
           {step === 3 && (
@@ -265,10 +319,12 @@ function Step2Details({
   onNext,
   onBack,
   initialData,
+  uploadFn,
 }: {
   onNext: (data: EventDetails) => void;
   onBack: () => void;
   initialData: Partial<FullEvent>;
+  uploadFn: UploadFn;
 }) {
   const {
     register,
@@ -317,13 +373,18 @@ function Step2Details({
 
       <div>
         <label className="mb-2 block text-sm font-semibold text-gray-200">
-          Banner URL (Optional)
+          Banner Image
         </label>
-        <input
-          {...register("bannerUrl")}
-          className="w-full rounded-lg border border-purple-700 bg-gray-900 px-4 py-3 text-gray-100 transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-          placeholder="https://example.com/banner.jpg"
-        />
+        <UploaderProvider uploadFn={uploadFn} autoUpload>
+          <SingleImageDropzone
+            height={200}
+            width={200}
+            dropzoneOptions={{
+              maxSize: 1024 * 1024 * 5,
+              accept: { "image/*": [".png", ".jpg", ".jpeg", ".gif"] },
+            }}
+          />
+        </UploaderProvider>
         {errors.bannerUrl && (
           <p className="mt-1 text-sm text-red-400">
             {errors.bannerUrl.message}
@@ -341,18 +402,6 @@ function Step2Details({
           />
           <label htmlFor="isPaid" className="font-medium text-gray-200">
             This is a paid event
-          </label>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          <input
-            type="checkbox"
-            {...register("isApproved")}
-            id="isApproved"
-            className="h-5 w-5 rounded border-purple-600 bg-gray-800 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
-          />
-          <label htmlFor="isApproved" className="font-medium text-gray-200">
-            Pre-approved event
           </label>
         </div>
       </div>

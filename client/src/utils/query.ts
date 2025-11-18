@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
+  FullEvent,
   LoginInput,
   RegisterInput,
   RegistrationInput,
@@ -291,6 +292,37 @@ export const useCheckInUser = () => {
       await queryClient.invalidateQueries({
         queryKey: ["registration-details"],
       });
+    },
+  });
+};
+
+export const useCreateEvent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (formData: FullEvent) => {
+      try {
+        return await axios
+          .post(`${env.NEXT_PUBLIC_BACKEND_URL}/event`, formData, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            method: "POST",
+            withCredentials: true,
+          })
+          .then((res) => res.status);
+      } catch (e) {
+        if (e instanceof AxiosError) {
+          throw new Error(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
+            e.response?.data.message ?? "Event creation failed",
+          );
+        }
+        throw new Error("An unexpected error occurred");
+      }
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["all-events"] });
+      await queryClient.invalidateQueries({ queryKey: ["organizer-details"] });
     },
   });
 };

@@ -27,7 +27,6 @@ export const eventSchema = z.object({
   }),
   bannerUrl: z.url('Invalid banner URL').transform(v => v === '' ? null : v),
   category: z.string().min(3, 'Category must be at least 3 characters long'),
-  isApproved: z.boolean().default(false),
   isPaid: z.boolean().default(false),
   organizerId: z.string(),
   tickets: z.array(z.object({
