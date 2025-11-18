@@ -241,7 +241,7 @@ const FeaturedEvents = () => {
                   <div className="relative flex flex-col md:flex-row">
                     <div className="relative h-48 overflow-hidden sm:h-56 md:h-auto md:w-1/3">
                       <Image
-                        src={`https://picsum.photos/seed/${event.id}/200/300`}
+                        src={event.bannerUrl}
                         alt={event.title}
                         width={400}
                         height={300}

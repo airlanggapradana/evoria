@@ -37,7 +37,7 @@ model Event {
   category      String?
   isApproved    Boolean        @default(false)
   isPaid        Boolean        @default(false)
-  organizer     User           @relation("EventOrganizer", fields: [organizerId], references: [id])
+  organizer     User           @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
   organizerId   String
   tickets       Ticket[]
   registrations Registration[]
@@ -47,7 +47,7 @@ model Event {
 
 model Ticket {
   id            String         @id @default(cuid())
-  event         Event          @relation(fields: [eventId], references: [id])
+  event         Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId       String
   name          String // Contoh: "Presale", "VIP", "Regular"
   quantity      Int
@@ -57,11 +57,11 @@ model Ticket {
 
 model Registration {
   id        String             @id @default(cuid())
-  user      User               @relation(fields: [userId], references: [id])
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  event     Event              @relation(fields: [eventId], references: [id])
+  event     Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId   String
-  ticket    Ticket?            @relation(fields: [ticketId], references: [id])
+  ticket    Ticket?            @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   ticketId  String?
   payment   Payment?
   status    RegistrationStatus @default(PENDING)
@@ -74,7 +74,7 @@ model Registration {
 
 model Payment {
   id             String        @id @default(cuid())
-  registration   Registration  @relation(fields: [registrationId], references: [id])
+  registration   Registration  @relation(fields: [registrationId], references: [id], onDelete: Cascade)
   registrationId String        @unique
   amount         Int
   method         String? // e.g. "Midtrans", "Cash"

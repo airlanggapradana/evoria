@@ -20,6 +20,10 @@ const config = {
         protocol: "https",
         hostname: "picsum.photos",
       },
+      {
+        protocol: "https",
+        hostname: "files.edgestore.dev",
+      },
     ],
   },
 };

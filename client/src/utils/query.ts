@@ -326,3 +326,34 @@ export const useCreateEvent = () => {
     },
   });
 };
+
+export const useDeleteEvent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (eventId: string) => {
+      try {
+        return await axios
+          .delete(`${env.NEXT_PUBLIC_BACKEND_URL}/event/${eventId}`, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            method: "DELETE",
+            withCredentials: true,
+          })
+          .then((res) => res.status);
+      } catch (e) {
+        if (e instanceof AxiosError) {
+          throw new Error(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
+            e.response?.data.message ?? "Event deletion failed",
+          );
+        }
+        throw new Error("An unexpected error occurred");
+      }
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["all-events"] });
+      await queryClient.invalidateQueries({ queryKey: ["organizer-details"] });
+    },
+  });
+};

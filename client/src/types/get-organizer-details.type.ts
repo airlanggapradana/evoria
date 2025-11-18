@@ -24,6 +24,7 @@ export interface RecentEvent {
   id: string;
   title: string;
   location: string;
+  bannerUrl: string;
   startTime: Date;
   endTime: Date;
   totalParticipants: number;

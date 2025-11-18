@@ -16,16 +16,21 @@ import {
   BarChart3,
   Download,
 } from "lucide-react";
-import { useGetOrganizerDetails } from "@/utils/query";
+import { useDeleteEvent, useGetOrganizerDetails } from "@/utils/query";
 import DashboardSkeleton from "@/components/skeletons/dashboard-skeleton";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/utils/cookies";
+import { toast } from "sonner";
+import { useEdgeStore } from "@/lib/edgestore";
 
 const OrganizerDashboard = () => {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState("overview");
   const [searchQuery, setSearchQuery] = useState("");
+  const { edgestore } = useEdgeStore();
 
+  const { mutateAsync: handleDeleteEvent, isPending: isPendingDelete } =
+    useDeleteEvent();
   const { data: organizerData, isLoading } = useGetOrganizerDetails();
 
   const formatDate = (dateString: Date) => {
@@ -106,10 +111,11 @@ const OrganizerDashboard = () => {
       {/* Welcome Section */}
       <div className="mb-6 sm:mb-8">
         <h2 className="mb-2 text-2xl font-bold lg:text-3xl">
-          Welcome back, {organizerData.data.organizer.name}! 👋
+          Selamat Datang, {organizerData.data.organizer.name}! 👋
         </h2>
         <p className="text-sm text-gray-400 sm:text-base">
-          Here&#39;s what&#39;s happening with your events today.
+          Disinilah kamu dapat mengelola semua acara yang kamu buat dan melihat
+          statistiknya.
         </p>
       </div>
 
@@ -173,19 +179,19 @@ const OrganizerDashboard = () => {
             >
               <Plus className="mb-2 h-6 w-6 text-indigo-400 transition-transform group-hover:scale-110 sm:mb-3 sm:h-8 sm:w-8" />
               <h3 className="mb-1 text-sm font-bold sm:text-base">
-                Create New Event
+                Buat Event Baru
               </h3>
               <p className="text-xs text-gray-400 sm:text-sm">
-                Set up your next amazing event
+                Mulai membuat acara baru sekarang!
               </p>
             </button>
             <button className="group rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-4 text-left transition-all hover:border-purple-500 sm:p-6">
               <BarChart3 className="mb-2 h-6 w-6 text-purple-400 transition-transform group-hover:scale-110 sm:mb-3 sm:h-8 sm:w-8" />
               <h3 className="mb-1 text-sm font-bold sm:text-base">
-                View Analytics
+                Lihat Analytics
               </h3>
               <p className="text-xs text-gray-400 sm:text-sm">
-                Check your event performance
+                Pantau performa acara kamu secara real-time
               </p>
             </button>
             <button className="group rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-4 text-left transition-all hover:border-green-500 sm:p-6">
@@ -194,18 +200,21 @@ const OrganizerDashboard = () => {
                 Export Reports
               </h3>
               <p className="text-xs text-gray-400 sm:text-sm">
-                Download event data and reports
+                Download event data dan laporan
               </p>
             </button>
           </div>
 
           {/* Recent Events */}
           <div>
-            <h3 className="mb-3 text-lg font-bold sm:mb-4 sm:text-xl">
-              Recent Events
+            <h3 className="mb-2 text-lg font-bold sm:text-xl">
+              Events Terbaru
             </h3>
+            <p className={"text-muted-foreground mb-3 text-sm sm:mb-4"}>
+              Menampilkan 5 acara terbaru yang telah kamu buat.
+            </p>
             <div className="space-y-3 sm:space-y-4">
-              {organizerData.data.recentEvents.slice(0, 3).map((event) => (
+              {organizerData.data.recentEvents.slice(0, 5).map((event) => (
                 <div
                   key={event.id}
                   className="overflow-hidden rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 transition-all hover:border-gray-600 sm:rounded-2xl"
@@ -229,25 +238,23 @@ const OrganizerDashboard = () => {
                         <div className="text-lg font-bold text-indigo-400 sm:text-2xl">
                           {event.totalParticipants}
                         </div>
-                        <div className="text-xs text-gray-500">
-                          Participants
-                        </div>
+                        <div className="text-xs text-gray-500">Peserta</div>
                       </div>
                       <div>
                         <div className="text-lg font-bold text-green-400 sm:text-2xl">
                           {event.ticketsSold}
                         </div>
                         <div className="text-xs text-gray-500">
-                          Tickets Sold
+                          Tiket terjual
                         </div>
                       </div>
                       <div>
                         <div className="truncate text-lg font-bold text-purple-400 sm:text-2xl">
                           {event.revenue > 0
                             ? formatPrice(event.revenue)
-                            : "FREE"}
+                            : "Tidak ada pendapatan"}
                         </div>
-                        <div className="text-xs text-gray-500">Revenue</div>
+                        <div className="text-xs text-gray-500">Pendapatan</div>
                       </div>
                     </div>
                   </div>
@@ -316,7 +323,7 @@ const OrganizerDashboard = () => {
                       <div className="truncate text-lg font-bold text-purple-400 sm:text-xl">
                         {event.revenue > 0
                           ? formatPrice(event.revenue)
-                          : "FREE"}
+                          : "No Revenue"}
                       </div>
                       <div className="text-xs text-gray-500">Revenue</div>
                     </div>
@@ -335,7 +342,31 @@ const OrganizerDashboard = () => {
                       <Download className="h-4 w-4" />
                       <span className="hidden sm:inline">Export</span>
                     </button>
-                    <button className="ml-auto flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold transition-colors hover:bg-red-500 sm:gap-2">
+                    <button
+                      className="ml-auto flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold transition-colors hover:bg-red-500 sm:gap-2"
+                      disabled={isPendingDelete}
+                      onClick={async () => {
+                        try {
+                          const res = await handleDeleteEvent(event.id);
+                          if (res === 200) {
+                            toast.success("Event deleted successfully", {
+                              position: "top-center",
+                              richColors: true,
+                            });
+                            await edgestore.publicFiles.delete({
+                              url: event.bannerUrl,
+                            });
+                          }
+                        } catch (e) {
+                          if (e instanceof Error) {
+                            toast.error(`Error deleting event: ${e.message}`, {
+                              position: "top-center",
+                              richColors: true,
+                            });
+                          }
+                        }
+                      }}
+                    >
                       <Trash2 className="h-4 w-4" />
                       <span className="hidden sm:inline">Delete</span>
                     </button>
