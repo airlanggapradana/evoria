@@ -4,7 +4,8 @@ import midtransClient from "midtrans-client";
 import {env} from "../env";
 import {RegistrationInput, registrationSchema} from "../zod/schema";
 import jwt from "jsonwebtoken";
-import {nanoid} from 'nanoid';
+
+const {nanoid} = require('nanoid');
 
 const snap = new midtransClient.Snap({
   isProduction: env.IS_PRODUCTION === 'true',
