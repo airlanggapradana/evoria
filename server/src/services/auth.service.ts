@@ -40,15 +40,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     res.cookie("access_token", accessToken, {
       httpOnly: true,
-      secure: env.NODE_ENV === "production",
-      sameSite: false,
       maxAge: 24 * 60 * 60 * 1000,
     });
 
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
-      secure: env.NODE_ENV === "production",
-      sameSite: false,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
