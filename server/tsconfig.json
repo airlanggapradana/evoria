@@ -6,8 +6,8 @@
     "outDir": "./dist",
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "NodeNext",
-    "target": "ES2022",
+    "module": "CommonJS",
+    "target": "ES6",
     // For nodejs:
     // "lib": ["esnext"],
     //    "types": [
@@ -17,6 +17,7 @@
 
     // Other Outputs
     "sourceMap": true,
+    "esModuleInterop": true,
     "declaration": true,
     "declarationMap": true,
     // Stricter Typechecking Options
