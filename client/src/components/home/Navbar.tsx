@@ -1,40 +1,20 @@
 "use client";
-import {
-  Search,
-  Ticket,
-  Menu,
-  X,
-  User,
-  Calendar,
-  Plus,
-  LogOut,
-} from "lucide-react";
+import { Search, Ticket, Menu, X, Calendar, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { deleteCookie, getCookie } from "@/utils/cookies";
+import { useState } from "react";
+import { deleteCookie } from "@/utils/cookies";
 import { useMe } from "@/utils/query";
 import { PiSquaresFour } from "react-icons/pi";
 
 const Navbar = () => {
   const router = useRouter();
-  const [cookies, setCookies] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const { data } = useMe();
-
-  useEffect(() => {
-    const fetchCookie = async () => {
-      const userCookie = await getCookie("access_token");
-      if (userCookie) {
-        setCookies(userCookie);
-      }
-    };
-    void fetchCookie();
-  }, []);
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-white/10 bg-slate-900/80 backdrop-blur-xl">
@@ -62,7 +42,7 @@ const Navbar = () => {
               <Search className="h-5 w-5" />
             </Button>
 
-            {cookies && data ? (
+            {data ? (
               <>
                 {data.role === "USER" && (
                   <Button
@@ -170,7 +150,7 @@ const Navbar = () => {
 
                   {/* Mobile Actions */}
                   <div className="space-y-3 border-t border-white/10 pt-4">
-                    {cookies && data ? (
+                    {data ? (
                       <>
                         {data.role === "USER" && (
                           <Button
