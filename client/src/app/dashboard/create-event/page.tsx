@@ -81,6 +81,7 @@ export default function CreateEventPage() {
       const res = await edgestore.publicFiles.upload({
         file,
         signal,
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         onProgressChange,
         options: {
           temporary: true,
