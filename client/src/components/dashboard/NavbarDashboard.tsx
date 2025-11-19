@@ -23,17 +23,29 @@ const NavbarDashboard = () => {
               onClick={() => router.push("/dashboard/create-event")}
             >
               <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="xs:inline hidden">Create</span>
+              <span className="inline">Buat Event</span>
             </button>
             <button
-              className="rounded-lg bg-gray-800 p-2 transition-colors hover:bg-gray-700"
-              onClick={async () => {
-                await deleteCookie("access_token");
-                await deleteCookie("refresh_token");
-                window.location.reload();
+              type="button"
+              className="flex items-center gap-2 rounded-lg bg-gray-800 px-3 py-2 text-sm font-semibold transition-colors hover:bg-gray-700 disabled:opacity-50"
+              onClick={async (e) => {
+                if (!confirm("Logout and clear session?")) return;
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.setAttribute("aria-busy", "true");
+                btn.disabled = true;
+                try {
+                  await deleteCookie("access_token");
+                  await deleteCookie("refresh_token");
+                  router.replace("/");
+                } finally {
+                  btn.removeAttribute("aria-busy");
+                  btn.disabled = false;
+                }
               }}
+              aria-label="Logout"
             >
               <RiLogoutBoxLine className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="inline">Logout</span>
             </button>
           </div>
         </div>

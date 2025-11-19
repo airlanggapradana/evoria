@@ -40,52 +40,6 @@ const Hero = () => {
                 </p>
               </div>
 
-              {/* Enhanced Search Bar */}
-              <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl sm:p-6">
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <div className="relative flex-1">
-                    <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                    <Input
-                      type="search"
-                      aria-label="Cari event"
-                      placeholder="Cari event, artis, venue..."
-                      className="h-12 border-white/10 bg-white/10 pl-12 text-white placeholder:text-gray-400 focus:border-teal-500/50 sm:h-14"
-                    />
-                  </div>
-                  <Button
-                    size="lg"
-                    className="h-12 w-full bg-gradient-to-r from-teal-500 to-sky-500 px-8 font-semibold hover:from-teal-600 hover:to-sky-600 sm:h-14 sm:w-auto"
-                  >
-                    <Search className="mr-2 h-5 w-5" />
-                    Cari
-                  </Button>
-                </div>
-
-                {/* Quick Filters */}
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
-                    <Calendar className="h-4 w-4" />
-                    <span>Pencarian cepat:</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 border border-white/10 bg-white/5 text-white hover:bg-white/10"
-                    >
-                      Akhir Pekan Ini
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 border border-white/10 bg-white/5 text-white hover:bg-white/10"
-                    >
-                      Dekat Saya
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
               {/* Stats */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 <div className="space-y-1">

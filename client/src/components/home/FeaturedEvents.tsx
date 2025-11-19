@@ -9,18 +9,31 @@ import {
   TrendingUp,
   ChevronRight,
   ChevronLeft,
+  Calendar,
+  Search,
 } from "lucide-react";
 import { useState, useMemo, Fragment } from "react";
-import { useGetAllEvents } from "@/utils/query";
+import { useGetAllEvents, useMe } from "@/utils/query";
 import Image from "next/image";
 import { getCookie } from "@/utils/cookies";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { useDebounce } from "use-debounce";
 
 const FeaturedEvents = () => {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
   const [currentPage, setCurrentPage] = useState(1);
-  const { data, isLoading } = useGetAllEvents(currentPage);
+  const { data, isLoading } = useGetAllEvents({
+    page: currentPage,
+    limit: 5,
+    search: debouncedSearchQuery,
+  });
+  const { data: session, isLoading: isLoadingSession } = useMe();
+
+  console.log(debouncedSearchQuery);
 
   const events = data?.data;
   const pagination = data?.pagination;
@@ -122,11 +135,11 @@ const FeaturedEvents = () => {
         <div className="w-full max-w-2xl rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/80 to-gray-800/70 p-8 text-center backdrop-blur-md">
           <Sparkles className="mx-auto mb-4 h-9 w-9 text-teal-400" />
           <h3 className="mb-2 text-2xl font-semibold text-white">
-            No events available
+            Tidak Ada Acara Untuk Ditampilkan
           </h3>
           <p className="mb-6 text-sm text-gray-400">
-            There are currently no events to show. Try exploring other
-            categories or refresh the list.
+            Saat ini tidak ada acara yang tersedia. Silakan periksa kembali
+            nanti.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
@@ -178,7 +191,7 @@ const FeaturedEvents = () => {
 
       <div className="relative z-10 container mx-auto px-4">
         {/* Header */}
-        <div className="mb-10 text-center sm:mb-12 md:mb-16">
+        <div className="mb-10 text-center sm:mb-12">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1.5 backdrop-blur-sm sm:mb-4 sm:px-4 sm:py-2">
             <Sparkles className="h-3 w-3 text-teal-400 sm:h-4 sm:w-4" />
             <span className="text-xs font-medium text-teal-300 sm:text-sm">
@@ -193,6 +206,23 @@ const FeaturedEvents = () => {
             Temukan acara terbaik yang sedang tren dan jangan lewatkan momen
             seru di sekitar Anda.
           </p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mx-auto mb-8 max-w-4xl space-y-4 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl sm:mb-10 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Input
+                type="search"
+                aria-label="Cari event"
+                placeholder="fostifest, seminar digital marketing, workshop fotografi..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-12 border-white/10 bg-white/10 pl-12 text-white placeholder:text-gray-400 focus:border-teal-500/50 sm:h-14"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Category Filter */}
@@ -300,7 +330,7 @@ const FeaturedEvents = () => {
                           </div>
                           <div>
                             <div className="text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400">
-                              Time
+                              Waktu Acara
                             </div>
                             <div className="text-xs font-semibold text-gray-300 transition-colors duration-300 group-hover:text-gray-100 sm:text-sm">
                               {formatTime(event.startTime)} -{" "}
@@ -315,7 +345,7 @@ const FeaturedEvents = () => {
                           </div>
                           <div>
                             <div className="text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400">
-                              Location
+                              Lokasi
                             </div>
                             <div className="text-xs font-semibold text-gray-300 transition-colors duration-300 group-hover:text-gray-100 sm:text-sm">
                               {event.location}
@@ -328,7 +358,7 @@ const FeaturedEvents = () => {
                         <div className="flex items-center gap-4 sm:gap-6">
                           <div>
                             <div className="mb-0.5 text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400 sm:mb-1">
-                              Starting from
+                              Dimulai dari
                             </div>
                             <div className="text-xl font-bold text-gray-300 transition-colors duration-300 group-hover:text-teal-400 sm:text-2xl">
                               {lowestPrice === 0
@@ -339,7 +369,7 @@ const FeaturedEvents = () => {
                           <div className="h-10 w-px bg-gray-800/50 transition-colors duration-300 group-hover:bg-gray-700/50 sm:h-12"></div>
                           <div>
                             <div className="mb-0.5 text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400 sm:mb-1">
-                              Tickets left
+                              Tiket Tersisa
                             </div>
                             <div className="flex items-center gap-2">
                               <TrendingUp className="h-3.5 w-3.5 text-emerald-400 transition-transform duration-300 group-hover:scale-110 sm:h-4 sm:w-4" />
@@ -351,17 +381,26 @@ const FeaturedEvents = () => {
                         </div>
 
                         <button
-                          className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:scale-105 hover:from-indigo-500 hover:to-purple-500 hover:shadow-xl hover:shadow-indigo-500/50 active:scale-95 sm:w-auto sm:px-8 sm:py-3 sm:text-base"
+                          className={`flex w-full items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 sm:w-auto sm:px-8 sm:py-3 ${
+                            session?.role === "ORGANIZER"
+                              ? "pointer-events-none cursor-not-allowed bg-gray-800 text-gray-400 opacity-60"
+                              : "bg-gradient-to-r from-indigo-600 to-purple-600 shadow-indigo-500/30 hover:scale-105 hover:from-indigo-500 hover:to-purple-500 hover:shadow-xl hover:shadow-indigo-500/50 active:scale-95"
+                          }`}
+                          disabled={session?.role === "ORGANIZER"}
+                          aria-disabled={session?.role === "ORGANIZER"}
                           onClick={async () => {
-                            const session = await getCookie("access_token");
-                            if (!session) {
+                            if (session?.role === "ORGANIZER") return;
+                            const token = await getCookie("access_token");
+                            if (!token) {
                               router.push("/auth/sign-in");
                             } else {
                               router.push(`/events/${event.id}`);
                             }
                           }}
                         >
-                          Get Tickets
+                          {session?.role === "ORGANIZER"
+                            ? "Tidak Dapat Membeli Tiket"
+                            : "Dapatkan Tiket"}
                           <ChevronRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 sm:h-5 sm:w-5" />
                         </button>
                       </div>

@@ -4,7 +4,9 @@ import prisma from "../../prisma/prisma";
 export const getOrganizerDashboard = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const organizerId = (req as any).user.id;
+    const search = req.query.search?.toString() || "";
 
+    // Fetch organizer detail
     const organizer = await prisma.user.findUnique({
       where: {id: organizerId},
       select: {
@@ -12,105 +14,113 @@ export const getOrganizerDashboard = async (req: Request, res: Response, next: N
         role: true,
         name: true,
         email: true,
-        createdAt: true,
+        createdAt: true
       }
-    })
-
-    // 1. Total events created
-    const totalEvents = await prisma.event.count({
-      where: {organizerId},
     });
 
-    // 2. Total registrations from all events by this organizer
+    // Total events created
+    const totalEvents = await prisma.event.count({
+      where: {
+        organizerId,
+        title: {contains: search, mode: "insensitive"}
+      }
+    });
+
+    // Total event registrations
     const totalRegistrations = await prisma.registration.count({
       where: {
-        event: {organizerId}
-      },
+        event: {
+          organizerId,
+          title: {contains: search, mode: "insensitive"}
+        }
+      }
     });
 
-    // 3. Total revenue (payment SUCCESS only)
-    const totalRevenueAgg = await prisma.payment.aggregate({
+    // Total revenue from successful payments
+    const revenue = await prisma.payment.aggregate({
       _sum: {amount: true},
       where: {
         status: "SUCCESS",
         registration: {
-          event: {organizerId},
-        },
-      },
+          event: {
+            organizerId,
+            title: {contains: search, mode: "insensitive"}
+          }
+        }
+      }
     });
 
-    const totalRevenue = totalRevenueAgg._sum.amount || 0;
-
-    // 4. Total registrations by status
-    const registrationsByStatus = await prisma.registration.groupBy({
+    // Registrations grouped by status
+    const statusGroups = await prisma.registration.groupBy({
       by: ["status"],
-      _count: {status: true},
       where: {
-        event: {organizerId}
+        event: {
+          organizerId,
+          title: {contains: search, mode: "insensitive"}
+        }
       },
+      _count: {status: true}
     });
 
-    // Convert group-by result → easier JSON
-    const statusMap: Record<string, number> = {
+    const registrationsByStatus = {
       CONFIRMED: 0,
       PENDING: 0,
-      CANCELLED: 0,
+      CANCELLED: 0
     };
 
-    registrationsByStatus.forEach((row) => {
-      statusMap[row.status] = row._count.status;
+    statusGroups.forEach((group) => {
+      registrationsByStatus[group.status] = group._count.status;
     });
 
-    // 5. Recent events detail (limit 5)
-    const recentEvents = await prisma.event.findMany({
-      where: {organizerId},
+    // Recent events
+    const recentEventsDB = await prisma.event.findMany({
+      where: {
+        organizerId,
+        title: {contains: search, mode: "insensitive"}
+      },
       orderBy: {createdAt: "desc"},
       take: 5,
       include: {
         registrations: {
-          include: {
-            payment: true,
-          }
-        },
-        tickets: true,
-      },
+          include: {payment: true}
+        }
+      }
     });
 
-    // Map to clean response
-    const recentEventsFormatted = recentEvents.map((event) => {
-      const totalParticipants = event.registrations.length;
+    const recentEvents = recentEventsDB.map((evt) => {
+      const totalParticipants = evt.registrations.length;
+      const ticketsSold = evt.registrations.filter((r) => r.status === "CONFIRMED").length;
 
-      const ticketsSold = event.registrations.filter(
-        (r) => r.status === "CONFIRMED"
-      ).length;
-
-      const eventRevenue = event.registrations
-        .filter((r) => r.payment?.status === "SUCCESS")
-        .reduce((sum, r) => sum + (r.payment?.amount || 0), 0);
+      const revenue = evt.registrations.reduce((sum, r) => {
+        if (r.payment?.status === "SUCCESS") {
+          return sum + r.payment.amount;
+        }
+        return sum;
+      }, 0);
 
       return {
-        id: event.id,
-        title: event.title,
-        location: event.location,
-        startTime: event.startTime,
-        endTime: event.endTime,
-        bannerUrl: event.bannerUrl,
+        id: evt.id,
+        title: evt.title,
+        location: evt.location,
+        bannerUrl: evt.bannerUrl || "",
+        startTime: evt.startTime,
+        endTime: evt.endTime,
         totalParticipants,
         ticketsSold,
-        revenue: eventRevenue,
+        revenue
       };
     });
 
     return res.json({
-      message: "Organizer dashboard data fetched successfully",
+      message: "Organizer dashboard data",
       data: {
         organizer,
         totalEvents,
         totalRegistrations,
-        totalRevenue,
-        registrationsByStatus: statusMap,
-        recentEvents: recentEventsFormatted,
-      },
+        totalRevenue: revenue._sum.amount || 0,
+        registrationsByStatus,
+        recentEvents
+      }
     });
 
   } catch (error) {

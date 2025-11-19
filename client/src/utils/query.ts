@@ -89,18 +89,22 @@ export const useMe = () => {
   });
 };
 
-export const useGetAllEvents = (
-  page?: number,
-  limit?: number,
-  search?: string,
-) => {
+export const useGetAllEvents = ({
+  page,
+  limit,
+  search,
+}: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}) => {
   return useQuery({
     queryKey: ["all-events", { page, limit, search }],
     queryFn: async () => {
       try {
         return await axios
           .get(
-            `${env.NEXT_PUBLIC_BACKEND_URL}/event${page && limit ? `?page=${page}&limit=${limit}` : search ? `search=${search}` : ""}`,
+            `${env.NEXT_PUBLIC_BACKEND_URL}/event${page && limit && search ? `?page=${page}&limit=${limit}&search=${search}` : ""}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -235,19 +239,22 @@ export const useGetRegistrationDetails = (registrationId: string) => {
   });
 };
 
-export const useGetOrganizerDetails = () => {
+export const useGetOrganizerDetails = (search?: string) => {
   return useQuery({
-    queryKey: ["organizer-details"],
+    queryKey: ["organizer-details", { search }],
     queryFn: async () => {
       try {
         return await axios
-          .get(`${env.NEXT_PUBLIC_BACKEND_URL}/organizer`, {
-            headers: {
-              "Content-Type": "application/json",
+          .get(
+            `${env.NEXT_PUBLIC_BACKEND_URL}/organizer${search ? `?search=${search}` : ""}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              method: "GET",
+              withCredentials: true,
             },
-            method: "GET",
-            withCredentials: true,
-          })
+          )
           .then((res) => res.data as GetOrganizerDetailsResponse);
       } catch (e) {
         if (e instanceof AxiosError) {

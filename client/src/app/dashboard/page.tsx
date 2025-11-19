@@ -22,16 +22,19 @@ import { useRouter } from "next/navigation";
 import { getCookie } from "@/utils/cookies";
 import { toast } from "sonner";
 import { useEdgeStore } from "@/lib/edgestore";
+import { useDebounce } from "use-debounce";
 
 const OrganizerDashboard = () => {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState("overview");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
   const { edgestore } = useEdgeStore();
 
   const { mutateAsync: handleDeleteEvent, isPending: isPendingDelete } =
     useDeleteEvent();
-  const { data: organizerData, isLoading } = useGetOrganizerDetails();
+  const { data: organizerData, isLoading } =
+    useGetOrganizerDetails(debouncedSearchQuery);
 
   const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
@@ -65,16 +68,9 @@ const OrganizerDashboard = () => {
     return <DashboardSkeleton />;
   }
 
-  if (!organizerData) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
-        No Data
-      </div>
-    );
-  }
-
-  const filteredEvents = organizerData.data.recentEvents.filter((event) =>
-    event.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  const query = debouncedSearchQuery?.toLowerCase() ?? "";
+  const filteredEvents = organizerData?.data.recentEvents.filter((event) =>
+    event.title.toLowerCase().includes(query),
   );
 
   const StatCard: React.FC<{
@@ -111,7 +107,7 @@ const OrganizerDashboard = () => {
       {/* Welcome Section */}
       <div className="mb-6 sm:mb-8">
         <h2 className="mb-2 text-2xl font-bold lg:text-3xl">
-          Selamat Datang, {organizerData.data.organizer.name}! 👋
+          Selamat Datang, {organizerData?.data.organizer.name}! 👋
         </h2>
         <p className="text-sm text-gray-400 sm:text-base">
           Disinilah kamu dapat mengelola semua acara yang kamu buat dan melihat
@@ -146,27 +142,31 @@ const OrganizerDashboard = () => {
             <StatCard
               icon={Calendar}
               label="Total Events"
-              value={organizerData.data.totalEvents}
+              value={organizerData?.data ? organizerData.data.totalEvents : 0}
               color="bg-indigo-500"
             />
             <StatCard
               icon={Users}
               label="Total Registrations"
-              value={organizerData.data.totalRegistrations}
-              subtext={`${organizerData.data.registrationsByStatus.CONFIRMED} confirmed`}
+              value={
+                organizerData?.data ? organizerData.data.totalRegistrations : 0
+              }
+              subtext={`${organizerData?.data.registrationsByStatus.CONFIRMED} confirmed`}
               color="bg-purple-500"
             />
             <StatCard
               icon={DollarSign}
               label="Total Revenue"
-              value={formatPrice(organizerData.data.totalRevenue)}
+              value={formatPrice(
+                organizerData?.data ? organizerData.data.totalRevenue : 0,
+              )}
               color="bg-green-500"
             />
             <StatCard
               icon={CheckCircle}
               label="Confirmed"
-              value={organizerData.data.registrationsByStatus.CONFIRMED}
-              subtext={`${organizerData.data.registrationsByStatus.PENDING} pending`}
+              value={organizerData?.data.registrationsByStatus.CONFIRMED}
+              subtext={`${organizerData?.data.registrationsByStatus.PENDING} pending`}
               color="bg-cyan-500"
             />
           </div>
@@ -214,52 +214,78 @@ const OrganizerDashboard = () => {
               Menampilkan 5 acara terbaru yang telah kamu buat.
             </p>
             <div className="space-y-3 sm:space-y-4">
-              {organizerData.data.recentEvents.slice(0, 5).map((event) => (
-                <div
-                  key={event.id}
-                  className="overflow-hidden rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 transition-all hover:border-gray-600 sm:rounded-2xl"
-                >
-                  <div className="p-4 sm:p-6">
-                    <div className="mb-3 flex items-start justify-between">
-                      <div className="min-w-0 flex-1">
-                        <h4 className="mb-1 truncate text-base font-bold sm:text-lg">
-                          {event.title}
-                        </h4>
-                        <p className="truncate text-xs text-gray-400 sm:text-sm">
-                          {formatDate(event.startTime)} • {event.location}
-                        </p>
+              {(organizerData?.data?.recentEvents ?? []).length > 0 ? (
+                (organizerData?.data?.recentEvents ?? [])
+                  .slice(0, 5)
+                  .map((event) => (
+                    <div
+                      key={event.id}
+                      className="overflow-hidden rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 transition-all hover:border-gray-600 sm:rounded-2xl"
+                    >
+                      <div className="p-4 sm:p-6">
+                        <div className="mb-3 flex items-start justify-between">
+                          <div className="min-w-0 flex-1">
+                            <h4 className="mb-1 truncate text-base font-bold sm:text-lg">
+                              {event.title}
+                            </h4>
+                            <p className="truncate text-xs text-gray-400 sm:text-sm">
+                              {formatDate(event.startTime)} • {event.location}
+                            </p>
+                          </div>
+                          <button className="ml-2 flex-shrink-0 rounded-lg bg-gray-800 p-1.5 transition-colors hover:bg-gray-700 sm:p-2">
+                            <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                          <div>
+                            <div className="text-lg font-bold text-indigo-400 sm:text-2xl">
+                              {event.totalParticipants}
+                            </div>
+                            <div className="text-xs text-gray-500">Peserta</div>
+                          </div>
+                          <div>
+                            <div className="text-lg font-bold text-green-400 sm:text-2xl">
+                              {event.ticketsSold}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Tiket terjual
+                            </div>
+                          </div>
+                          <div>
+                            <div className="truncate text-lg font-bold text-purple-400 sm:text-2xl">
+                              {event.revenue > 0
+                                ? formatPrice(event.revenue)
+                                : "Tidak ada pendapatan"}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Pendapatan
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <button className="ml-2 flex-shrink-0 rounded-lg bg-gray-800 p-1.5 transition-colors hover:bg-gray-700 sm:p-2">
-                        <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
-                      </button>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                      <div>
-                        <div className="text-lg font-bold text-indigo-400 sm:text-2xl">
-                          {event.totalParticipants}
-                        </div>
-                        <div className="text-xs text-gray-500">Peserta</div>
-                      </div>
-                      <div>
-                        <div className="text-lg font-bold text-green-400 sm:text-2xl">
-                          {event.ticketsSold}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Tiket terjual
-                        </div>
-                      </div>
-                      <div>
-                        <div className="truncate text-lg font-bold text-purple-400 sm:text-2xl">
-                          {event.revenue > 0
-                            ? formatPrice(event.revenue)
-                            : "Tidak ada pendapatan"}
-                        </div>
-                        <div className="text-xs text-gray-500">Pendapatan</div>
-                      </div>
-                    </div>
+                  ))
+              ) : (
+                <div className="rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-6 text-center sm:rounded-2xl sm:p-8">
+                  <div className="bg-opacity-20 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500 text-indigo-200">
+                    <Plus className="h-6 w-6" />
                   </div>
+                  <h4 className="mb-2 text-lg font-bold">
+                    Tidak ada event terbaru
+                  </h4>
+                  <p className="mb-4 text-sm text-gray-400">
+                    Kamu belum membuat event terbaru. Mulai buat event pertamamu
+                    untuk melihatnya di sini.
+                  </p>
+                  <button
+                    onClick={() => router.push("/dashboard/create-event")}
+                    className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold transition-colors hover:bg-indigo-500"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Buat Event
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -288,92 +314,121 @@ const OrganizerDashboard = () => {
 
           {/* Events List */}
           <div className="space-y-3 sm:space-y-4">
-            {filteredEvents.map((event) => (
-              <div
-                key={event.id}
-                className="overflow-hidden rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 transition-all hover:border-gray-600 sm:rounded-2xl"
-              >
-                <div className="p-4 sm:p-6">
-                  <div className="mb-3 flex items-start justify-between sm:mb-4">
-                    <div className="min-w-0 flex-1">
-                      <h4 className="mb-2 text-lg font-bold sm:text-xl">
-                        {event.title}
-                      </h4>
-                      <div className="flex flex-col gap-2 text-xs text-gray-400 sm:flex-row sm:flex-wrap sm:gap-4 sm:text-sm">
-                        <span>📅 {formatDate(event.startTime)}</span>
-                        <span>📍 {event.location}</span>
+            {filteredEvents && filteredEvents.length > 0 ? (
+              filteredEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="overflow-hidden rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 transition-all hover:border-gray-600 sm:rounded-2xl"
+                >
+                  <div className="p-4 sm:p-6">
+                    <div className="mb-3 flex items-start justify-between sm:mb-4">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="mb-2 text-lg font-bold sm:text-xl">
+                          {event.title}
+                        </h4>
+                        <div className="flex flex-col gap-2 text-xs text-gray-400 sm:flex-row sm:flex-wrap sm:gap-4 sm:text-sm">
+                          <span>📅 {formatDate(event.startTime)}</span>
+                          <span>📍 {event.location}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mb-3 grid grid-cols-2 gap-2 sm:mb-4 sm:gap-4 lg:grid-cols-4">
-                    <div className="rounded-lg bg-gray-800 p-2 text-center sm:p-3">
-                      <div className="text-lg font-bold text-indigo-400 sm:text-xl">
-                        {event.totalParticipants}
+                    <div className="mb-3 grid grid-cols-2 gap-2 sm:mb-4 sm:gap-4 lg:grid-cols-4">
+                      <div className="rounded-lg bg-gray-800 p-2 text-center sm:p-3">
+                        <div className="text-lg font-bold text-indigo-400 sm:text-xl">
+                          {event.totalParticipants}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Participants
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-500">Participants</div>
-                    </div>
-                    <div className="rounded-lg bg-gray-800 p-2 text-center sm:p-3">
-                      <div className="text-lg font-bold text-green-400 sm:text-xl">
-                        {event.ticketsSold}
+                      <div className="rounded-lg bg-gray-800 p-2 text-center sm:p-3">
+                        <div className="text-lg font-bold text-green-400 sm:text-xl">
+                          {event.ticketsSold}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Tickets Sold
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-500">Tickets Sold</div>
-                    </div>
-                    <div className="col-span-2 rounded-lg bg-gray-800 p-2 text-center sm:p-3">
-                      <div className="truncate text-lg font-bold text-purple-400 sm:text-xl">
-                        {event.revenue > 0
-                          ? formatPrice(event.revenue)
-                          : "No Revenue"}
+                      <div className="col-span-2 rounded-lg bg-gray-800 p-2 text-center sm:p-3">
+                        <div className="truncate text-lg font-bold text-purple-400 sm:text-xl">
+                          {event.revenue > 0
+                            ? formatPrice(event.revenue)
+                            : "No Revenue"}
+                        </div>
+                        <div className="text-xs text-gray-500">Revenue</div>
                       </div>
-                      <div className="text-xs text-gray-500">Revenue</div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <button className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold transition-colors hover:bg-indigo-500 sm:gap-2">
-                      <Eye className="h-4 w-4" />
-                      <span>View</span>
-                    </button>
-                    <button className="flex items-center gap-1.5 rounded-lg bg-gray-700 px-3 py-2 text-sm font-semibold transition-colors hover:bg-gray-600 sm:gap-2">
-                      <Edit className="h-4 w-4" />
-                      <span>Edit</span>
-                    </button>
-                    <button className="flex items-center gap-1.5 rounded-lg bg-gray-700 px-3 py-2 text-sm font-semibold transition-colors hover:bg-gray-600 sm:gap-2">
-                      <Download className="h-4 w-4" />
-                      <span className="hidden sm:inline">Export</span>
-                    </button>
-                    <button
-                      className="ml-auto flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold transition-colors hover:bg-red-500 sm:gap-2"
-                      disabled={isPendingDelete}
-                      onClick={async () => {
-                        try {
-                          const res = await handleDeleteEvent(event.id);
-                          if (res === 200) {
-                            toast.success("Event deleted successfully", {
-                              position: "top-center",
-                              richColors: true,
-                            });
-                            await edgestore.publicFiles.delete({
-                              url: event.bannerUrl,
-                            });
+                    <div className="flex flex-wrap gap-2">
+                      <button className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold transition-colors hover:bg-indigo-500 sm:gap-2">
+                        <Eye className="h-4 w-4" />
+                        <span>View</span>
+                      </button>
+                      <button className="flex items-center gap-1.5 rounded-lg bg-gray-700 px-3 py-2 text-sm font-semibold transition-colors hover:bg-gray-600 sm:gap-2">
+                        <Edit className="h-4 w-4" />
+                        <span>Edit</span>
+                      </button>
+                      <button className="flex items-center gap-1.5 rounded-lg bg-gray-700 px-3 py-2 text-sm font-semibold transition-colors hover:bg-gray-600 sm:gap-2">
+                        <Download className="h-4 w-4" />
+                        <span className="hidden sm:inline">Export</span>
+                      </button>
+                      <button
+                        className="ml-auto flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold transition-colors hover:bg-red-500 sm:gap-2"
+                        disabled={isPendingDelete}
+                        onClick={async () => {
+                          try {
+                            const res = await handleDeleteEvent(event.id);
+                            if (res === 200) {
+                              toast.success("Event deleted successfully", {
+                                position: "top-center",
+                                richColors: true,
+                              });
+                              await edgestore.publicFiles.delete({
+                                url: event.bannerUrl,
+                              });
+                            }
+                          } catch (e) {
+                            if (e instanceof Error) {
+                              toast.error(
+                                `Error deleting event: ${e.message}`,
+                                {
+                                  position: "top-center",
+                                  richColors: true,
+                                },
+                              );
+                            }
                           }
-                        } catch (e) {
-                          if (e instanceof Error) {
-                            toast.error(`Error deleting event: ${e.message}`, {
-                              position: "top-center",
-                              richColors: true,
-                            });
-                          }
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="hidden sm:inline">Delete</span>
-                    </button>
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="hidden sm:inline">Delete</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-6 text-center sm:rounded-2xl sm:p-8">
+                <div className="bg-opacity-20 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500 text-indigo-200">
+                  <Plus className="h-6 w-6" />
+                </div>
+                <h4 className="mb-2 text-lg font-bold">
+                  Tidak ada event terbaru
+                </h4>
+                <p className="mb-4 text-sm text-gray-400">
+                  Kamu belum membuat event terbaru. Mulai buat event pertamamu
+                  untuk melihatnya di sini.
+                </p>
+                <button
+                  onClick={() => router.push("/dashboard/create-event")}
+                  className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold transition-colors hover:bg-indigo-500"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Buat Event
+                </button>
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}
