@@ -6,7 +6,6 @@ import type {
   RegisterInput,
   RegistrationInput,
 } from "@/zod/schema";
-import { env } from "@/env";
 import type { LoginResponse } from "@/types/login.type";
 import type { MeResponse } from "@/types/me.type";
 import type { AllEventsResponse } from "@/types/all-events.type";

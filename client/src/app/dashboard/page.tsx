@@ -54,7 +54,7 @@ const OrganizerDashboard = () => {
   };
 
   useEffect(() => {
-    if (!session && session !== 200) {
+    if (!session) {
       router.push("/auth/sign-in");
     }
   }, [router, session]);
