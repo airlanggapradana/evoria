@@ -56,7 +56,7 @@ const EventDetail = () => {
     }).format(price);
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingSession) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
         <div className="flex items-center gap-3">
@@ -101,7 +101,7 @@ const EventDetail = () => {
       {/* Hero Banner */}
       <div className="relative h-64 overflow-hidden sm:h-80 md:h-96">
         <Image
-          src={`https://picsum.photos/seed/picsum/1920/1080`}
+          src={eventData.bannerUrl}
           alt={eventData.title}
           width={1920}
           height={1080}
