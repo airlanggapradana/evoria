@@ -49,7 +49,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     // Hanya set domain jika production
     if (isProduction) {
-      cookieOptions.domain = "ticketix.vercel.app";
+      cookieOptions.domain = "ticketix-api.vercel.app";
     }
 
     res.cookie("access_token", accessToken, {
@@ -92,7 +92,7 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
 
     // Hanya set domain jika production
     if (isProduction) {
-      clearOptions.domain = "ticketix.vercel.app";
+      clearOptions.domain = "ticketix-api.vercel.app";
     }
 
     res.clearCookie("access_token", clearOptions);
