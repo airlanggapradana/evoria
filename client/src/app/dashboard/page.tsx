@@ -54,13 +54,18 @@ const OrganizerDashboard = () => {
   };
 
   useEffect(() => {
-    if (!session) {
+    if (!isLoadingSession && !session) {
       router.push("/auth/sign-in");
     }
-  }, [router, session]);
+  }, [router, session, isLoadingSession]);
 
-  if (isLoading || isLoadingSession) {
+  // Add early return
+  if (isLoadingSession) {
     return <DashboardSkeleton />;
+  }
+
+  if (!session) {
+    return null; // or a loading spinner
   }
 
   const query = debouncedSearchQuery?.toLowerCase() ?? "";
