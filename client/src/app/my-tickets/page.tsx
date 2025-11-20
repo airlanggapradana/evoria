@@ -239,7 +239,7 @@ const MyTicketsPage = () => {
                 {/* Event Image */}
                 <div className="relative md:w-1/3">
                   <Image
-                    src={`https://picsum.photos/seed/${registration.registrationId}/1920/1080`}
+                    src={registration.event.bannerUrl}
                     alt={registration.event.title}
                     width={400}
                     height={400}
