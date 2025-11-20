@@ -38,19 +38,22 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       {expiresIn: "7d", algorithm: "HS256"}
     );
 
-    // Cookie configuration based on environment
+    // --- REVISI LOGIKA COOKIE ---
+    // Karena kita menggunakan Proxy (Rewrite) di Frontend,
+    // request dianggap berasal dari domain yang sama (Same-Origin).
     const isProduction = env.NODE_ENV === "production";
+
     const cookieOptions: any = {
       httpOnly: true,
+      // Secure wajib true di Vercel (HTTPS), tapi false di Localhost (HTTP)
       secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      path: "/"
+      // Gunakan 'lax' agar cookie dikirim di navigasi normal & request same-origin.
+      // Jangan gunakan 'none' karena ini bukan lagi cross-site request berkat proxy.
+      sameSite: "lax",
+      path: "/",
+      // PENTING: Jangan set atribut 'domain' secara manual!
+      // Biarkan kosong agar browser mengikat cookie ke domain Frontend (host saat ini).
     };
-
-    // Hanya set domain jika production
-    if (isProduction) {
-      cookieOptions.domain = "locketix.vercel.app";
-    }
 
     res.cookie("access_token", accessToken, {
       ...cookieOptions,
@@ -61,6 +64,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
+    // -----------------------------
 
 
     return res.status(200).json({
@@ -79,21 +83,16 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
 export const logout = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Cookie configuration based on environment
     const isProduction = env.NODE_ENV === "production";
 
-    // Untuk clearCookie, opsi harus sama persis dengan saat cookie dibuat
+    // Config harus SAMA PERSIS dengan saat cookie dibuat agar bisa dihapus
     const clearOptions: any = {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
+      sameSite: "lax",
       path: "/"
+      // Domain tidak perlu diset karena saat create juga tidak diset
     };
-
-    // Hanya set domain jika production
-    if (isProduction) {
-      clearOptions.domain = "locketix.vercel.app";
-    }
 
     res.clearCookie("access_token", clearOptions);
     res.clearCookie("refresh_token", clearOptions);

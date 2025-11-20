@@ -17,12 +17,15 @@ import type { GetRegistrationDetailsType } from "@/types/get-registration-detail
 import type { GetOrganizerDetailsResponse } from "@/types/get-organizer-details.type";
 import type { CheckInType } from "@/types/check-in.type";
 
+// Definisikan Prefix Proxy agar lebih rapi
+const PROXY_API = "/api/proxy";
+
 export const useRegister = () => {
   return useMutation({
     mutationFn: async (data: RegisterInput) => {
       try {
         return await axios
-          .post(`${env.NEXT_PUBLIC_BACKEND_URL}/auth/register`, data, {
+          .post(`${PROXY_API}/auth/register`, data, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -45,7 +48,7 @@ export const useLogin = () => {
     mutationFn: async (data: LoginInput) => {
       try {
         return await axios
-          .post(`${env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, data, {
+          .post(`${PROXY_API}/auth/login`, data, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -70,7 +73,7 @@ export const useMe = () => {
     queryFn: async () => {
       try {
         return await axios
-          .get(`${env.NEXT_PUBLIC_BACKEND_URL}/user/me`, {
+          .get(`${PROXY_API}/user/me`, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -94,7 +97,7 @@ export const useLogout = () => {
     mutationFn: async () => {
       try {
         return await axios
-          .post(`${env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`, {
+          .post(`${PROXY_API}/auth/logout`, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -128,7 +131,7 @@ export const useGetAllEvents = ({
       try {
         return await axios
           .get(
-            `${env.NEXT_PUBLIC_BACKEND_URL}/event${page && limit && search ? `?page=${page}&limit=${limit}&search=${search}` : ""}`,
+            `${PROXY_API}/event${page && limit && search ? `?page=${page}&limit=${limit}&search=${search}` : ""}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -154,7 +157,7 @@ export const useGetEventDetails = (eventId: string) => {
     queryFn: async () => {
       try {
         return await axios
-          .get(`${env.NEXT_PUBLIC_BACKEND_URL}/event/${eventId}`, {
+          .get(`${PROXY_API}/event/${eventId}`, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -180,7 +183,7 @@ export const useMakePayment = () => {
     mutationFn: async (data: RegistrationInput) => {
       try {
         return await axios
-          .post(`${env.NEXT_PUBLIC_BACKEND_URL}/registration`, data, {
+          .post(`${PROXY_API}/registration`, data, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -212,7 +215,7 @@ export const useGetUserDetails = () => {
     queryFn: async () => {
       try {
         return await axios
-          .get(`${env.NEXT_PUBLIC_BACKEND_URL}/user`, {
+          .get(`${PROXY_API}/user`, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -239,16 +242,13 @@ export const useGetRegistrationDetails = (registrationId: string) => {
     queryFn: async () => {
       try {
         return await axios
-          .get(
-            `${env.NEXT_PUBLIC_BACKEND_URL}/registration/check/${registrationId}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-              method: "GET",
-              withCredentials: true,
+          .get(`${PROXY_API}/registration/check/${registrationId}`, {
+            headers: {
+              "Content-Type": "application/json",
             },
-          )
+            method: "GET",
+            withCredentials: true,
+          })
           .then((res) => res.data as GetRegistrationDetailsType);
       } catch (e) {
         if (e instanceof AxiosError) {
@@ -269,16 +269,13 @@ export const useGetOrganizerDetails = (search?: string) => {
     queryFn: async () => {
       try {
         return await axios
-          .get(
-            `${env.NEXT_PUBLIC_BACKEND_URL}/organizer${search ? `?search=${search}` : ""}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-              method: "GET",
-              withCredentials: true,
+          .get(`${PROXY_API}/organizer${search ? `?search=${search}` : ""}`, {
+            headers: {
+              "Content-Type": "application/json",
             },
-          )
+            method: "GET",
+            withCredentials: true,
+          })
           .then((res) => res.data as GetOrganizerDetailsResponse);
       } catch (e) {
         if (e instanceof AxiosError) {
@@ -299,15 +296,12 @@ export const useCheckInUser = () => {
     mutationFn: async (token: string) => {
       try {
         return await axios
-          .post(
-            `${env.NEXT_PUBLIC_BACKEND_URL}/registration/check-in?token=${token}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-              method: "POST",
+          .post(`${PROXY_API}/registration/check-in?token=${token}`, {
+            headers: {
+              "Content-Type": "application/json",
             },
-          )
+            method: "POST",
+          })
           .then((res) => (res.data as CheckInType).participant);
       } catch (e) {
         if (e instanceof AxiosError) {
@@ -333,7 +327,7 @@ export const useCreateEvent = () => {
     mutationFn: async (formData: FullEvent) => {
       try {
         return await axios
-          .post(`${env.NEXT_PUBLIC_BACKEND_URL}/event`, formData, {
+          .post(`${PROXY_API}/event`, formData, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -364,7 +358,7 @@ export const useDeleteEvent = () => {
     mutationFn: async (eventId: string) => {
       try {
         return await axios
-          .delete(`${env.NEXT_PUBLIC_BACKEND_URL}/event/${eventId}`, {
+          .delete(`${PROXY_API}/event/${eventId}`, {
             headers: {
               "Content-Type": "application/json",
             },
