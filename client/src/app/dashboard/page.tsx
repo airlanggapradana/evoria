@@ -60,7 +60,7 @@ const OrganizerDashboard = () => {
   }, [router, session, isLoadingSession]);
 
   // Add early return
-  if (isLoadingSession) {
+  if (isLoadingSession || isLoading) {
     return <DashboardSkeleton />;
   }
 

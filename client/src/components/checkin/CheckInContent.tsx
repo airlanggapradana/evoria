@@ -62,6 +62,33 @@ const CheckInContent = () => {
     }).format(price);
   };
 
+  if (isLoadingRegistration) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4 text-white">
+        <div className="w-full max-w-3xl animate-pulse">
+          <div className="rounded-3xl bg-gradient-to-br from-gray-900 to-gray-800 p-6 shadow-xl">
+            <div className="h-48 w-full rounded-md bg-gray-800" />
+            <div className="mt-4 h-6 w-1/3 rounded bg-gray-700" />
+            <div className="mt-2 h-4 w-2/3 rounded bg-gray-700" />
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="h-12 rounded bg-gray-800" />
+              <div className="h-12 rounded bg-gray-800" />
+            </div>
+            <div className="mt-6 flex items-center justify-between">
+              <div className="h-10 w-36 rounded bg-gray-800" />
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-transparent" />
+                <span className="text-sm text-gray-400">
+                  Loading registration...
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!registrationData) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
