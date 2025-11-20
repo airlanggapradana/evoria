@@ -1,12 +1,13 @@
 "use client";
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
-import { deleteCookie } from "@/utils/cookies";
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { useRouter } from "next/navigation";
+import { useLogout } from "@/utils/query";
 
 const NavbarDashboard = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const { mutateAsync: handleLogout, isPending } = useLogout();
   const router = useRouter();
   return (
     <div className="bg-opacity-95 sticky top-0 z-50 border-b border-gray-800 bg-gray-950 backdrop-blur-md">
@@ -27,6 +28,7 @@ const NavbarDashboard = () => {
             </button>
             <button
               type="button"
+              disabled={isPending}
               className="flex items-center gap-2 rounded-lg bg-gray-800 px-3 py-2 text-sm font-semibold transition-colors hover:bg-gray-700 disabled:opacity-50"
               onClick={async (e) => {
                 if (!confirm("Logout and clear session?")) return;
@@ -34,8 +36,7 @@ const NavbarDashboard = () => {
                 btn.setAttribute("aria-busy", "true");
                 btn.disabled = true;
                 try {
-                  await deleteCookie("access_token");
-                  await deleteCookie("refresh_token");
+                  await handleLogout();
                   router.replace("/");
                 } finally {
                   btn.removeAttribute("aria-busy");

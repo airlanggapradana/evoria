@@ -16,10 +16,9 @@ import {
   BarChart3,
   Download,
 } from "lucide-react";
-import { useDeleteEvent, useGetOrganizerDetails } from "@/utils/query";
+import { useDeleteEvent, useGetOrganizerDetails, useMe } from "@/utils/query";
 import DashboardSkeleton from "@/components/skeletons/dashboard-skeleton";
 import { useRouter } from "next/navigation";
-import { getCookie } from "@/utils/cookies";
 import { toast } from "sonner";
 import { useEdgeStore } from "@/lib/edgestore";
 import { useDebounce } from "use-debounce";
@@ -33,6 +32,7 @@ const OrganizerDashboard = () => {
 
   const { mutateAsync: handleDeleteEvent, isPending: isPendingDelete } =
     useDeleteEvent();
+  const { data: session, isLoading: isLoadingSession } = useMe();
   const { data: organizerData, isLoading } =
     useGetOrganizerDetails(debouncedSearchQuery);
 
@@ -54,17 +54,12 @@ const OrganizerDashboard = () => {
   };
 
   useEffect(() => {
-    const fetchCookies = async () => {
-      const accessToken = await getCookie("access_token");
-      const refreshToken = await getCookie("refresh_token");
-      if (!accessToken || !refreshToken) {
-        router.push("/auth/sign-in");
-      }
-    };
-    void fetchCookies();
-  }, [router]);
+    if (!session && session !== 200) {
+      router.push("/auth/sign-in");
+    }
+  }, [router, session]);
 
-  if (isLoading) {
+  if (isLoading || isLoadingSession) {
     return <DashboardSkeleton />;
   }
 

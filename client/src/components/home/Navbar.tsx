@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { deleteCookie } from "@/utils/cookies";
-import { useMe } from "@/utils/query";
+import { useLogout, useMe } from "@/utils/query";
 import { PiSquaresFour } from "react-icons/pi";
 
 const Navbar = () => {
@@ -15,6 +14,7 @@ const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const { data } = useMe();
+  const { mutateAsync: handleLogout, isPending } = useLogout();
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-white/10 bg-slate-900/80 backdrop-blur-xl">
@@ -69,9 +69,9 @@ const Navbar = () => {
                 <Button
                   variant="ghost"
                   size="sm"
+                  disabled={isPending}
                   onClick={async () => {
-                    await deleteCookie("access_token");
-                    await deleteCookie("refresh_token");
+                    await handleLogout();
                     window.location.reload();
                   }}
                   className="h-10 text-gray-300 hover:bg-white/10 hover:text-white"
@@ -177,9 +177,9 @@ const Navbar = () => {
                         <Button
                           variant="ghost"
                           size="sm"
+                          disabled={isPending}
                           onClick={async () => {
-                            await deleteCookie("access_token");
-                            await deleteCookie("refresh_token");
+                            await handleLogout();
                             window.location.reload();
                           }}
                           className="h-12 w-full justify-start rounded-md px-4 text-gray-200 transition hover:bg-white/5 hover:text-white"

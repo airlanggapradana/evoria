@@ -38,18 +38,28 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       {expiresIn: "7d", algorithm: "HS256"}
     );
 
-    res.cookie("access_token", accessToken, {
+    // Cookie configuration based on environment
+    const isProduction = env.NODE_ENV === "production";
+    const cookieOptions: any = {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 24 * 60 * 60 * 1000,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      path: "/"
+    };
+
+    // Hanya set domain jika production
+    if (isProduction) {
+      cookieOptions.domain = "ticketix.vercel.app";
+    }
+
+    res.cookie("access_token", accessToken, {
+      ...cookieOptions,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
 
     res.cookie("refresh_token", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
 
@@ -64,6 +74,35 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     });
   } catch (e) {
     next(e);
+  }
+};
+
+export const logout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Cookie configuration based on environment
+    const isProduction = env.NODE_ENV === "production";
+
+    // Untuk clearCookie, opsi harus sama persis dengan saat cookie dibuat
+    const clearOptions: any = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      path: "/"
+    };
+
+    // Hanya set domain jika production
+    if (isProduction) {
+      clearOptions.domain = "ticketix.vercel.app";
+    }
+
+    res.clearCookie("access_token", clearOptions);
+    res.clearCookie("refresh_token", clearOptions);
+
+    return res.status(200).json({
+      message: "Logout successful"
+    });
+  } catch (error) {
+    next(error)
   }
 };
 
