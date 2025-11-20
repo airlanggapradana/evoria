@@ -42,7 +42,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      domain: env.FRONTEND_URL,
+      domain: "locketix.vercel.app",
       path: "/",
       maxAge: 24 * 60 * 60 * 1000,
     });
@@ -51,7 +51,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      domain: env.FRONTEND_URL,
+      domain: "locketix.vercel.app",
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
