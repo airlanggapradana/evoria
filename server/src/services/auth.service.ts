@@ -39,20 +39,16 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     );
 
     res.cookie("access_token", accessToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
       sameSite: "none",
-      domain: "locketix.vercel.app",
-      path: "/",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
     res.cookie("refresh_token", refreshToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
       sameSite: "none",
-      domain: "locketix.vercel.app",
-      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 

@@ -13,7 +13,7 @@ const app: Application = express();
 
 app.use(cors(
   {
-    origin: env.FRONTEND_URL,
+    origin: ["https://locketix.vercel.app", "http://localhost:3000"],
     credentials: true,
   }
 ));
