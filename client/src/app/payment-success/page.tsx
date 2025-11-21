@@ -12,11 +12,10 @@ import {
   Mail,
   Bell,
 } from "lucide-react";
-import { useGetRegistrationDetails } from "@/utils/query";
+import { useGetRegistrationDetails, useMe } from "@/utils/query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import SuccessSkeleton from "@/components/skeletons/success-skeleton";
-import { getCookie } from "@/utils/cookies";
 
 const PaymentSuccessPage = () => {
   const router = useRouter();
@@ -25,22 +24,19 @@ const PaymentSuccessPage = () => {
   const [registrationId, setRegistrationId] = useState<string | null>(null);
 
   const { data, isLoading, error } = useGetRegistrationDetails(registrationId!);
+  const { data: session, isLoading: isLoadingSession } = useMe();
 
   useEffect(() => {
-    const fetchData = async () => {
-      const accessToken = await getCookie("accessToken");
-      if (!accessToken) {
-        router.push("/auth/sign-in");
-      }
-    };
-    void fetchData();
+    if (!isLoadingSession && !session) {
+      router.push("/auth/sign-in");
+    }
     const regId = localStorage.getItem("registrationId");
     if (regId) {
       setRegistrationId(regId);
     }
     setAnimated(true);
     setTimeout(() => setShowConfetti(false), 3000);
-  }, [router]);
+  }, [isLoadingSession, router, session]);
 
   const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
