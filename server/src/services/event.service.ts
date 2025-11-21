@@ -231,6 +231,7 @@ export const createEvent = async (req: Request, res: Response, next: NextFunctio
           endTime: new Date(endTime),
           startTime: new Date(startTime),
           isPaid,
+          isApproved: true,
           description,
           location,
           category,

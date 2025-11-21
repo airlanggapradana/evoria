@@ -326,13 +326,17 @@ export const useCreateEvent = () => {
     mutationFn: async (formData: FullEvent) => {
       try {
         return await axios
-          .post(`${PROXY_API}/event`, formData, {
-            headers: {
-              "Content-Type": "application/json",
+          .post(
+            `${PROXY_API}/event`,
+            { ...formData, isApproved: true },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              method: "POST",
+              withCredentials: true,
             },
-            method: "POST",
-            withCredentials: true,
-          })
+          )
           .then((res) => res.status);
       } catch (e) {
         if (e instanceof AxiosError) {

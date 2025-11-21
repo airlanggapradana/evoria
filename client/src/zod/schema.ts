@@ -68,7 +68,7 @@ export const registrationSchema = z.object({
 // Zod schemas for each step
 export const eventBasicSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
+  description: z.string().min(5, "Description must be at least 5 characters"),
   category: z.string().min(1, "Category is required"),
   location: z.string().min(3, "Location is required"),
 });

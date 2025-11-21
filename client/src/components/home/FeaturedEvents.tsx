@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { useDebounce } from "use-debounce";
 import { toast } from "sonner";
 import FeaturedEventSkeleton from "@/components/skeletons/featured-event-skeleton";
+import { Badge } from "@/components/ui/badge";
 
 const FeaturedEvents = () => {
   const router = useRouter();
@@ -251,17 +252,35 @@ const FeaturedEvents = () => {
                     <div className="relative p-4 sm:p-6 md:w-2/3 md:p-8">
                       <div className="mb-4 flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="mb-3 flex flex-wrap items-center gap-2 sm:gap-3">
-                            <span className="rounded-full bg-gradient-to-r from-gray-800 to-gray-700 px-2.5 py-1 text-xs font-semibold text-gray-200 ring-1 ring-white/10 transition-all duration-300 group-hover:from-teal-600/20 group-hover:to-purple-600/20 group-hover:ring-teal-400/30 sm:px-3">
-                              {event.category}
-                            </span>
-                            <div className="flex items-center gap-1 text-xs text-gray-400 transition-colors duration-300 group-hover:text-gray-300 sm:text-sm">
-                              <Users className="mr-1 h-3.5 w-3.5 text-teal-400 sm:h-4 sm:w-4" />
-                              <span className="font-medium">
-                                {event.stats.confirmedCount}
+                          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                            <div className={"flex items-center gap-2"}>
+                              <span className="rounded-full bg-gradient-to-r from-gray-800 to-gray-700 px-2.5 py-1 text-xs font-semibold text-gray-200 ring-1 ring-white/10 transition-all duration-300 group-hover:from-teal-600/20 group-hover:to-purple-600/20 group-hover:ring-teal-400/30 sm:px-3">
+                                {event.category}
                               </span>
-                              <span>RSVP&apos;d</span>
+                              <div className="flex items-center gap-1 text-xs text-gray-400 transition-colors duration-300 group-hover:text-gray-300 sm:text-sm">
+                                <Users className="mr-1 h-3.5 w-3.5 text-teal-400 sm:h-4 sm:w-4" />
+                                <span className="font-medium">
+                                  {event.stats.confirmedCount}
+                                </span>
+                                <span>RSVP&apos;d</span>
+                              </div>
                             </div>
+                            <Badge
+                              className={`rounded-full px-2.5 py-1 text-xs font-semibold transition-colors duration-200 ${
+                                event.isApproved
+                                  ? "bg-emerald-500 text-white ring-1 ring-emerald-400/20"
+                                  : "bg-yellow-600 text-white ring-1 ring-yellow-400/20"
+                              }`}
+                              aria-label={
+                                event.isApproved
+                                  ? "Diterima"
+                                  : "Menunggu Persetujuan"
+                              }
+                            >
+                              {event.isApproved
+                                ? "Diterima"
+                                : "Menunggu Persetujuan"}
+                            </Badge>
                           </div>
                           <h2 className="mb-2 text-xl font-bold text-gray-100 transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-teal-400 group-hover:to-purple-400 group-hover:bg-clip-text group-hover:text-transparent sm:text-2xl md:text-3xl">
                             {event.title}
@@ -329,8 +348,7 @@ const FeaturedEvents = () => {
                           </div>
                         </div>
 
-                        <Button
-                          size="lg"
+                        <button
                           className={`flex w-full items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 sm:w-auto sm:px-8 sm:py-3 ${
                             session?.role === "ORGANIZER" || !event.isApproved
                               ? "pointer-events-none cursor-not-allowed bg-gray-800 text-gray-400 opacity-60"
@@ -369,7 +387,7 @@ const FeaturedEvents = () => {
                               ? "Acara Belum Disetujui"
                               : "Beli Tiket Sekarang"}
                           <ChevronRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 sm:h-5 sm:w-5" />
-                        </Button>
+                        </button>
                       </div>
                     </div>
                   </div>
