@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useEdgeStore } from "@/lib/edgestore";
 import { useDebounce } from "use-debounce";
+import { Badge } from "@/components/ui/badge";
 
 const OrganizerDashboard = () => {
   const router = useRouter();
@@ -232,9 +233,20 @@ const OrganizerDashboard = () => {
                               {formatDate(event.startTime)} • {event.location}
                             </p>
                           </div>
-                          <button className="ml-2 flex-shrink-0 rounded-lg bg-gray-800 p-1.5 transition-colors hover:bg-gray-700 sm:p-2">
-                            <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
-                          </button>
+                          <div className={"flex items-center gap-2"}>
+                            <Badge
+                              className={
+                                event.isApproved
+                                  ? "bg-green-600 text-white"
+                                  : "bg-red-600 text-white"
+                              }
+                            >
+                              {event.isApproved ? "Diterima" : "Ditinjau"}
+                            </Badge>
+                            <button className="ml-2 flex-shrink-0 rounded-lg bg-gray-800 p-1.5 transition-colors hover:bg-gray-700 sm:p-2">
+                              <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                            </button>
+                          </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2 sm:gap-4">
                           <div>

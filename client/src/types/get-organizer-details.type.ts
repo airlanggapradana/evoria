@@ -27,6 +27,7 @@ export interface RecentEvent {
   bannerUrl: string;
   startTime: Date;
   endTime: Date;
+  isApproved: boolean;
   totalParticipants: number;
   ticketsSold: number;
   revenue: number;

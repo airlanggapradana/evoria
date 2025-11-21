@@ -105,6 +105,7 @@ export const getOrganizerDashboard = async (req: Request, res: Response, next: N
         bannerUrl: evt.bannerUrl || "",
         startTime: evt.startTime,
         endTime: evt.endTime,
+        isApproved: evt.isApproved,
         totalParticipants,
         ticketsSold,
         revenue

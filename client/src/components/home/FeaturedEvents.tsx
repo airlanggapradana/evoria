@@ -14,10 +14,11 @@ import {
 import { useState, useMemo, Fragment } from "react";
 import { useGetAllEvents, useMe } from "@/utils/query";
 import Image from "next/image";
-import { getCookie } from "@/utils/cookies";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "use-debounce";
+import { toast } from "sonner";
+import FeaturedEventSkeleton from "@/components/skeletons/featured-event-skeleton";
 
 const FeaturedEvents = () => {
   const router = useRouter();
@@ -124,36 +125,7 @@ const FeaturedEvents = () => {
     return pages;
   };
 
-  if (isLoading || isLoadingSession)
-    return (
-      <section className="bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12">
-        <div className="container mx-auto px-4">
-          <div className="mb-8 text-center">
-            <div className="mx-auto h-6 w-48 animate-pulse rounded bg-gray-700/60" />
-            <div className="mx-auto mt-4 h-10 w-64 animate-pulse rounded bg-gray-700/60" />
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/80 to-gray-800/80 p-4 backdrop-blur-sm"
-              >
-                <div className="h-44 w-full animate-pulse overflow-hidden rounded-lg bg-gray-800/60" />
-                <div className="mt-4 space-y-2">
-                  <div className="h-4 w-3/4 animate-pulse rounded bg-gray-700/60" />
-                  <div className="h-3 w-1/2 animate-pulse rounded bg-gray-700/60" />
-                  <div className="mt-3 flex items-center justify-between">
-                    <div className="h-8 w-24 animate-pulse rounded bg-gray-700/60" />
-                    <div className="h-8 w-32 animate-pulse rounded bg-gray-700/60" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
+  if (isLoading || isLoadingSession) return <FeaturedEventSkeleton />;
 
   return (
     <section
@@ -357,18 +329,34 @@ const FeaturedEvents = () => {
                           </div>
                         </div>
 
-                        <button
+                        <Button
+                          size="lg"
                           className={`flex w-full items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 sm:w-auto sm:px-8 sm:py-3 ${
-                            session?.role === "ORGANIZER"
+                            session?.role === "ORGANIZER" || !event.isApproved
                               ? "pointer-events-none cursor-not-allowed bg-gray-800 text-gray-400 opacity-60"
                               : "bg-gradient-to-r from-indigo-600 to-purple-600 shadow-indigo-500/30 hover:scale-105 hover:from-indigo-500 hover:to-purple-500 hover:shadow-xl hover:shadow-indigo-500/50 active:scale-95"
                           }`}
-                          disabled={session?.role === "ORGANIZER"}
-                          aria-disabled={session?.role === "ORGANIZER"}
+                          disabled={
+                            session?.role === "ORGANIZER" || !event.isApproved
+                          }
+                          aria-disabled={
+                            session?.role === "ORGANIZER" || !event.isApproved
+                          }
+                          title={
+                            session?.role === "ORGANIZER"
+                              ? "Organizers tidak dapat membeli tiket."
+                              : !event.isApproved
+                                ? "Event not approved yet"
+                                : "Buy ticket now"
+                          }
                           onClick={async () => {
-                            if (session?.role === "ORGANIZER") return;
-                            const token = await getCookie("access_token");
-                            if (!token) {
+                            if (session?.role === "ORGANIZER") {
+                              toast.error(
+                                "Organizer tidak dapat membeli tiket.",
+                                { position: "top-center", richColors: true },
+                              );
+                            }
+                            if (!session) {
                               router.push("/auth/sign-in");
                             } else {
                               router.push(`/events/${event.id}`);
@@ -377,9 +365,11 @@ const FeaturedEvents = () => {
                         >
                           {session?.role === "ORGANIZER"
                             ? "Tidak Dapat Membeli Tiket"
-                            : "Dapatkan Tiket"}
+                            : !event.isApproved
+                              ? "Acara Belum Disetujui"
+                              : "Beli Tiket Sekarang"}
                           <ChevronRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 sm:h-5 sm:w-5" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
