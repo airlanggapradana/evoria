@@ -9,6 +9,8 @@ import {env} from "./env";
 import userRouter from "./controllers/user.controller";
 import organizerRouter from "./controllers/organizer.controller";
 import {rateLimit} from 'express-rate-limit'
+import {authMiddleware} from "./middlewares/auth.middleware";
+import adminRouter from "./controllers/admin.controller";
 
 const app: Application = express();
 
@@ -35,6 +37,7 @@ app.use('/api/event', eventRouter);
 app.use('/api/registration', registrationRouter);
 app.use('/api/user', userRouter);
 app.use('/api/organizer', organizerRouter)
+app.use('/api/admin', authMiddleware, adminRouter)
 
 app.use(errorHandler)
 
