@@ -55,11 +55,22 @@ const Navbar = () => {
                     My Tickets
                   </Button>
                 )}
-                {data.role !== "USER" && (
+                {data.role === "ORGANIZER" && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => router.push("/dashboard")}
+                    className="h-10 text-gray-300 hover:bg-white/10 hover:text-white"
+                  >
+                    <PiSquaresFour className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Button>
+                )}
+                {data.role === "ADMIN" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push("/dashboard/admin")}
                     className="h-10 text-gray-300 hover:bg-white/10 hover:text-white"
                   >
                     <PiSquaresFour className="mr-2 h-4 w-4" />

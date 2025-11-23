@@ -15,6 +15,7 @@ import type { GetUserDetailsResponse } from "@/types/get-user-details.type";
 import type { GetRegistrationDetailsType } from "@/types/get-registration-details.type";
 import type { GetOrganizerDetailsResponse } from "@/types/get-organizer-details.type";
 import type { CheckInType } from "@/types/check-in.type";
+import type { GetAllIncomingEventsResponse } from "@/types/get-incoming-events.type";
 
 // Definisikan Prefix Proxy agar lebih rapi
 const PROXY_API = "/api/proxy";
@@ -382,6 +383,79 @@ export const useDeleteEvent = () => {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["all-events"] });
       await queryClient.invalidateQueries({ queryKey: ["organizer-details"] });
+    },
+  });
+};
+
+export const useGetAllOrganizersWithEvents = (page?: number) => {
+  return useQuery({
+    queryKey: ["all-organizers-with-events", { page }],
+    queryFn: async () => {
+      try {
+        return await axios
+          .get(
+            `${PROXY_API}/admin/get-incoming-events${page ? `?page=${page}` : ""}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              method: "GET",
+              withCredentials: true,
+            },
+          )
+          .then((res) => res.data as GetAllIncomingEventsResponse);
+      } catch (e) {
+        if (e instanceof AxiosError) {
+          throw new Error(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
+            e.response?.data.message ??
+              "Fetching organizers with events failed",
+          );
+        }
+        throw new Error("An unexpected error occurred");
+      }
+    },
+  });
+};
+
+export const useUpdateEventApproval = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      isApproved,
+      eventId,
+    }: {
+      isApproved: boolean;
+      eventId: string;
+    }) => {
+      try {
+        return await axios
+          .put(
+            `${PROXY_API}/admin/update-approval-status/${eventId}`,
+            { isApproved },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              method: "PUT",
+              withCredentials: true,
+            },
+          )
+          .then((res) => res.status);
+      } catch (e) {
+        if (e instanceof AxiosError) {
+          throw new Error(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
+            e.response?.data.message ?? "Updating event approval failed",
+          );
+        }
+        throw new Error("An unexpected error occurred");
+      }
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["all-organizers-with-events"],
+      });
     },
   });
 };

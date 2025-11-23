@@ -271,3 +271,37 @@ export const getOrganizerDetails = async (req: Request, res: Response, next: Nex
     next(error)
   }
 };
+
+export const updateEventApproval = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const {id} = req.params;
+    const {isApproved} = req.body; // boolean
+
+    if (typeof isApproved !== "boolean") {
+      return res.status(400).json({message: "isApproved must be boolean"});
+    }
+
+    const event = await prisma.event.findUnique({where: {id: String(id)}});
+    if (!event) {
+      return res.status(404).json({message: "Event not found"});
+    }
+
+    const updated = await prisma.event.update({
+      where: {id: String(id)},
+      data: {isApproved},
+    });
+
+    return res.status(200).json({
+      message: `Event approval updated`,
+      data: {
+        id: updated.id,
+        title: updated.title,
+        isApproved: updated.isApproved,
+        updatedAt: updated.updatedAt,
+      },
+    });
+
+  } catch (err) {
+    next(err)
+  }
+};

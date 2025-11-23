@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useEdgeStore } from "@/lib/edgestore";
 import { useDebounce } from "use-debounce";
 import { Badge } from "@/components/ui/badge";
+import NavbarDashboard from "@/components/dashboard/NavbarDashboard";
 
 const OrganizerDashboard = () => {
   const router = useRouter();
@@ -105,6 +106,8 @@ const OrganizerDashboard = () => {
 
   return (
     <div className="mx-auto max-w-7xl px-3 py-6 sm:px-4 lg:px-6 lg:py-8">
+      {/* Header */}
+      <NavbarDashboard />
       {/* Welcome Section */}
       <div className="mb-6 sm:mb-8">
         <h2 className="mb-2 text-2xl font-bold lg:text-3xl">
