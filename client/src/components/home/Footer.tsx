@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Image from "next/image";
 
 const Footer = () => {
   const scrollToTop = () => {
@@ -32,17 +33,19 @@ const Footer = () => {
           {/* Brand Section - Larger */}
           <div className="lg:col-span-1">
             <Link href="/" className="group mb-6 flex items-center gap-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-sky-500 transition-transform group-hover:scale-105">
-                <Ticket className="h-6 w-6 text-white" />
-              </div>
-              <span className="bg-gradient-to-r from-teal-400 to-sky-400 bg-clip-text text-xl font-black text-transparent">
-                LOCKETIX
-              </span>
+              <Image
+                src={
+                  "https://res.cloudinary.com/airlanggapradana/image/upload/v1763976168/ChatGPT_Image_Nov_24__2025__04_20_41_PM-removebg-preview_1_krtgkj.webp"
+                }
+                alt={"logo_footer"}
+                width={200}
+                height={200}
+              />
             </Link>
             <p className="mb-6 leading-relaxed text-gray-400">
               Langkahmu menuju pengalaman acara yang tak terlupakan dimulai di
               sini. Temukan, pesan, dan nikmati acara favoritmu dengan mudah
-              bersama Locketix.
+              bersama Evoria.
             </p>
 
             {/* Newsletter */}
@@ -82,7 +85,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 md:flex-row">
           <p className="text-sm text-gray-400">
-            &copy; 2025 Locketix. All rights reserved.
+            &copy; 2025 Evoria. All rights reserved.
           </p>
 
           <Button

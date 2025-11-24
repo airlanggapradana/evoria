@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLogout, useMe } from "@/utils/query";
 import { PiSquaresFour } from "react-icons/pi";
+import Image from "next/image";
 
 const Navbar = () => {
   const router = useRouter();
@@ -22,12 +23,14 @@ const Navbar = () => {
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="group flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-sky-500 transition-transform group-hover:scale-105">
-              <Ticket className="h-5 w-5 text-white" />
-            </div>
-            <span className="bg-gradient-to-r from-teal-400 to-sky-400 bg-clip-text text-xl font-black text-transparent">
-              LOCKETIX
-            </span>
+            <Image
+              src={
+                "https://res.cloudinary.com/airlanggapradana/image/upload/v1763976168/ChatGPT_Image_Nov_24__2025__04_20_41_PM-removebg-preview_1_krtgkj.webp"
+              }
+              alt={"logo"}
+              width={150}
+              height={150}
+            />
           </Link>
 
           {/* Desktop Actions */}

@@ -14,7 +14,7 @@ const config = {
       },
       {
         protocol: "https",
-        hostname: "example.com",
+        hostname: "res.cloudinary.com",
       },
       {
         protocol: "https",
