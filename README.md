@@ -1,4 +1,4 @@
-# Locketix
+# Evoria | an Event Ticketing Platform
 
 ## 🏷 Badges
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
@@ -10,7 +10,7 @@
 > Personal project: platform untuk **membeli tiket acara** dan **membuat event**.
 
 ## 🎯 Deskripsi
-Locketix adalah aplikasi berbasis web/mobile yang memungkinkan dua peran utama:
+Evoria adalah aplikasi berbasis web/mobile yang memungkinkan dua peran utama:
 - **Event Organizer** → membuat dan mengelola event (detail event, tiket, harga, kuota)
 - **Pembeli Tiket** → melihat event yang tersedia, memilih tiket, melakukan pembayaran, menerima tiket digital
 
@@ -46,7 +46,7 @@ Tujuan utama platform ini adalah menyediakan solusi sederhana dan fleksibel untu
 ## 🚀 Instalasi & Setup
 1. Clone repositori:
 ```bash
-git clone https://github.com/airlanggapradana/locketix.git
+git clone https://github.com/airlanggapradana/evoria.git
 cd locketix
 ```
 
