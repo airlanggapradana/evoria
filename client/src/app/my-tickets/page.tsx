@@ -85,11 +85,11 @@ const MyTicketsPage = () => {
       case "CONFIRMED":
         return "bg-teal-500 bg-opacity-20 text-teal-100 border-teal-500";
       case "PENDING":
-        return "bg-yellow-500 bg-opacity-20 text-yellow-400 border-yellow-500";
+        return "bg-yellow-500 bg-opacity-20 text-yellow-100 border-yellow-500";
       case "CANCELLED":
-        return "bg-red-500 bg-opacity-20 text-red-400 border-red-500";
+        return "bg-red-500 bg-opacity-20 text-red-100 border-red-500";
       default:
-        return "bg-gray-500 bg-opacity-20 text-gray-400 border-gray-500";
+        return "bg-gray-500 bg-opacity-20 text-gray-100 border-gray-500";
     }
   };
 
@@ -126,12 +126,6 @@ const MyTicketsPage = () => {
       .split("_")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
-  };
-
-  const categoryGradients = {
-    Entertainment: "from-pink-500 to-rose-500",
-    Business: "from-cyan-500 to-blue-500",
-    Technology: "from-emerald-500 to-teal-500",
   };
 
   if (isLoading) {
@@ -246,7 +240,7 @@ const MyTicketsPage = () => {
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                   <div
-                    className={`absolute inset-0 bg-gradient-to-br ${categoryGradients[registration.event.category as keyof typeof categoryGradients] ?? ""} opacity-20`}
+                    className={`absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-500 opacity-20`}
                   ></div>
                   <div className="relative flex h-48 items-center justify-center p-6 md:h-full">
                     <div className="text-center">
@@ -342,16 +336,18 @@ const MyTicketsPage = () => {
                     <div className="text-xs text-gray-500">
                       Registered on {formatDate(registration.createdAt)}
                     </div>
-                    <div className="flex gap-2 sm:gap-3">
-                      <button
-                        onClick={() => handleShowQR(registration)}
-                        className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gray-800 px-4 py-2 text-sm font-semibold transition-colors hover:bg-gray-700 sm:flex-none sm:rounded-xl sm:px-6 sm:py-3"
-                      >
-                        <QrCode className="h-4 w-4" />
-                        <span className="hidden sm:inline">Show QR</span>
-                        <span className="sm:hidden">QR Code</span>
-                      </button>
-                    </div>
+                    {registration.status === "CONFIRMED" && (
+                      <div className="flex gap-2 sm:gap-3">
+                        <button
+                          onClick={() => handleShowQR(registration)}
+                          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gray-800 px-4 py-2 text-sm font-semibold transition-colors hover:bg-gray-700 sm:flex-none sm:rounded-xl sm:px-6 sm:py-3"
+                        >
+                          <QrCode className="h-4 w-4" />
+                          <span className="hidden sm:inline">Show QR</span>
+                          <span className="sm:hidden">QR Code</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

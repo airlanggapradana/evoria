@@ -22,6 +22,7 @@ export const registerEvent = async (req: Request, res: Response, next: NextFunct
         AND: [
           {userId},
           {eventId},
+          {status: {in: ["PENDING", "CONFIRMED"]}}
         ]
       },
     });
@@ -190,6 +191,34 @@ export const midtransNotification = async (req: Request, res: Response, next: Ne
       await prisma.registration.update({
         where: {id: updatedPayment.registrationId},
         data: {status: "CONFIRMED"},
+      });
+    }
+
+    // Handle Expired
+    if (newStatus === "FAILED") {
+      await prisma.$transaction(async (tx) => {
+        await tx.payment.update({
+          where: {id: order_id},
+          data: {
+            status: "FAILED",
+            method: payment_type,
+          },
+        });
+
+        await tx.registration.update({
+          where: {id: updatedPayment.registrationId},
+          data: {
+            status: "CANCELLED",
+          },
+        });
+
+        // OPTIONAL: return ticket stock
+        if (updatedPayment.registration.ticketId) {
+          await tx.ticket.update({
+            where: {id: updatedPayment.registration.ticketId},
+            data: {quantity: {increment: 1}},
+          });
+        }
       });
     }
 
