@@ -16,7 +16,7 @@ const app: Application = express();
 
 app.use(cors(
   {
-    origin: ["https://locketix.vercel.app", "http://localhost:3000"],
+    origin: ["https://evoria.vercel.app", "http://localhost:3000"],
     credentials: true,
   }
 ));
