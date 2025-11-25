@@ -119,7 +119,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = await tx.user.create({
         data: {
-          id: 'USER-' + Date.now(),
+          id: `${role === "USER" ? 'USER-' : role === "ORGANIZER" ? 'ORG-' : 'ADM'}` + Date.now(),
           role,
           name,
           email,

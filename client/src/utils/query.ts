@@ -387,9 +387,9 @@ export const useDeleteEvent = () => {
   });
 };
 
-export const useGetAllOrganizersWithEvents = (page?: number) => {
+export const useGetAllIncomingEvents = (page?: number) => {
   return useQuery({
-    queryKey: ["all-organizers-with-events", { page }],
+    queryKey: ["all-incoming-events", { page }],
     queryFn: async () => {
       try {
         return await axios
@@ -408,8 +408,7 @@ export const useGetAllOrganizersWithEvents = (page?: number) => {
         if (e instanceof AxiosError) {
           throw new Error(
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
-            e.response?.data.message ??
-              "Fetching organizers with events failed",
+            e.response?.data.message ?? "Fetching incoming events failed",
           );
         }
         throw new Error("An unexpected error occurred");
@@ -454,7 +453,7 @@ export const useUpdateEventApproval = () => {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["all-organizers-with-events"],
+        queryKey: ["all-incoming-events"],
       });
     },
   });
