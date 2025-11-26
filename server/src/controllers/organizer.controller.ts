@@ -1,9 +1,10 @@
 import {Router} from 'express';
 import {authMiddleware} from "../middlewares/auth.middleware";
-import {getOrganizerDashboard} from "../services/organizer.service";
+import {getOrganizerDashboard, getRegistrationChart} from "../services/organizer.service";
 
 const organizerRouter = Router();
 
 organizerRouter.get('/', authMiddleware, getOrganizerDashboard)
+organizerRouter.get('/get-chart', authMiddleware, getRegistrationChart)
 
 export default organizerRouter;
