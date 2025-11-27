@@ -16,6 +16,7 @@ import type { GetRegistrationDetailsType } from "@/types/get-registration-detail
 import type { GetOrganizerDetailsResponse } from "@/types/get-organizer-details.type";
 import type { CheckInType } from "@/types/check-in.type";
 import type { GetAllIncomingEventsResponse } from "@/types/get-incoming-events.type";
+import type { StatsResponse } from "@/types/charts.type";
 
 // Definisikan Prefix Proxy agar lebih rapi
 const PROXY_API = "/api/proxy";
@@ -455,6 +456,33 @@ export const useUpdateEventApproval = () => {
       await queryClient.invalidateQueries({
         queryKey: ["all-incoming-events"],
       });
+    },
+  });
+};
+
+export const useGetorganizerCharts = () => {
+  return useQuery({
+    queryKey: ["charts"],
+    queryFn: async () => {
+      try {
+        return await axios
+          .get(`${PROXY_API}/organizer/get-chart`, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            method: "GET",
+            withCredentials: true,
+          })
+          .then((res) => res.data as StatsResponse);
+      } catch (e) {
+        if (e instanceof AxiosError) {
+          throw new Error(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access
+            e.response?.data.message ?? "Fetching organizer charts failed",
+          );
+        }
+        throw new Error("An unexpected error occurred");
+      }
     },
   });
 };

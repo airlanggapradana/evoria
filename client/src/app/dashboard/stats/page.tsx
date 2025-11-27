@@ -21,53 +21,39 @@ import {
   Download,
   RefreshCw,
 } from "lucide-react";
+import { useGetorganizerCharts } from "@/utils/query";
 import NavbarDashboard from "@/components/dashboard/NavbarDashboard";
 
-type ChartType = "line" | "bar" | "area";
-
-interface Statistics {
-  message: string;
-  data: {
-    labels: string[];
-    counts: number[];
-  };
-}
-
-type RechartsTooltipItem = {
-  payload: { date: string };
-  value: number;
+type ChartPoint = {
+  date: string;
+  registrations: number;
 };
 
-interface CustomTooltipProps {
+type TooltipPayloadItem = {
+  value?: number | string;
+  payload?: {
+    date?: string;
+    registrations?: number;
+  };
+};
+
+type CustomTooltipProps = {
   active?: boolean;
-  payload?: RechartsTooltipItem[];
-}
+  payload?: TooltipPayloadItem[];
+};
 
 const RegistrationStatistics: React.FC = () => {
-  const [chartType, setChartType] = useState<ChartType>("line");
+  const [chartType, setChartType] = useState<"line" | "bar" | "area">("line");
   const [timeRange] = useState("7days");
 
-  const statisticsData: Statistics = {
-    message: "Registration chart data",
-    data: {
-      labels: [
-        "2025-11-20",
-        "2025-11-21",
-        "2025-11-22",
-        "2025-11-23",
-        "2025-11-24",
-        "2025-11-25",
-        "2025-11-26",
-      ],
-      counts: [170, 200, 150, 210, 100, 200, 300],
-    },
-  };
+  const { data: statisticsData, isLoading } = useGetorganizerCharts();
 
-  const labels = statisticsData.data.labels;
-  const counts = statisticsData.data.counts;
+  // Guard and defaults
+  const stats = statisticsData?.data;
+  const counts: number[] = stats?.counts ?? [];
+  const labels: string[] = stats?.labels ?? [];
 
-  // Transform data for recharts (safe indexing)
-  const chartData = labels.map((label, index) => ({
+  const chartData: ChartPoint[] = labels.map((label, index) => ({
     date: new Date(label).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -75,38 +61,50 @@ const RegistrationStatistics: React.FC = () => {
     registrations: counts[index] ?? 0,
   }));
 
-  // Calculate statistics (use numeric variables for comparisons)
-  const totalRegistrations = counts.reduce((sum, count) => sum + count, 0);
-  const averageRegistrations =
-    counts.length > 0 ? Math.round(totalRegistrations / counts.length) : 0;
-  const maxRegistrations = counts.length > 0 ? Math.max(...counts) : 0;
-  const minRegistrations = counts.length > 0 ? Math.min(...counts) : 0;
+  const totalRegistrations: number = stats?.totalRegistrations ?? 0;
+  const averageRegistrations: number = stats?.dailyAverage ?? 0;
+  const peakPeriod = stats?.peakPeriod;
+  const peakDate: string = peakPeriod?.label
+    ? new Date(peakPeriod.label).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })
+    : "";
+  const peakCount: number = peakPeriod?.count ?? 0;
+  const growth: number = stats?.growthRate ?? 0;
 
-  const firstCount = counts[0] ?? 0;
-  const lastCount = counts.at(-1) ?? 0;
-  const growthNumber =
-    counts.length > 1 && firstCount !== 0
-      ? ((lastCount - firstCount) / firstCount) * 100
-      : 0;
-  const growth = Number(growthNumber.toFixed(1));
-
-  const CustomTooltip: React.FC<CustomTooltipProps> = ({
-    active,
-    payload,
-  } = {}) => {
-    if (active && payload?.length) {
+  const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
+    if (active && payload && payload.length > 0) {
       const item = payload[0];
+      const date = item?.payload?.date ?? "";
+      const rawValue = item?.value;
+      const value =
+        typeof rawValue === "number" ? rawValue : Number(rawValue ?? 0);
+
       return (
         <div className="rounded-xl border border-gray-700 bg-gray-900 p-3 shadow-xl">
-          <p className="mb-1 text-sm text-gray-400">{item?.payload.date}</p>
+          <p className="mb-1 text-sm text-gray-400">{date}</p>
           <p className="text-lg font-bold text-indigo-400">
-            {item?.value} registrations
+            {value} registrations
           </p>
         </div>
       );
     }
     return null;
   };
+
+  if (isLoading || !statisticsData) {
+    return (
+      <div className="min-h-screen bg-gray-950 py-6 text-white sm:py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold">Registration Statistics</h1>
+            <p className="text-sm text-gray-400">Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -162,9 +160,10 @@ const RegistrationStatistics: React.FC = () => {
                 </div>
               </div>
               <div className="mb-1 text-2xl font-bold sm:text-3xl">
-                {maxRegistrations}
+                {peakCount}
               </div>
               <div className="text-xs text-gray-400 sm:text-sm">Peak Day</div>
+              <div className="mt-1 text-xs text-gray-500">{peakDate}</div>
             </div>
 
             <div className="rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:rounded-2xl sm:p-6">
@@ -174,9 +173,9 @@ const RegistrationStatistics: React.FC = () => {
                 </div>
               </div>
               <div
-                className={`mb-1 text-2xl font-bold sm:text-3xl ${growthNumber >= 0 ? "text-green-400" : "text-red-400"}`}
+                className={`mb-1 text-2xl font-bold sm:text-3xl ${growth >= 0 ? "text-green-400" : "text-red-400"}`}
               >
-                {growthNumber > 0 ? "+" : ""}
+                {growth > 0 ? "+" : ""}
                 {growth}%
               </div>
               <div className="text-xs text-gray-400 sm:text-sm">
@@ -355,13 +354,13 @@ const RegistrationStatistics: React.FC = () => {
                 </thead>
                 <tbody>
                   {labels.map((label, index) => {
-                    const prev = index > 0 ? (counts[index - 1] ?? 0) : 0;
                     const curr = counts[index] ?? 0;
-                    const changeNumber =
-                      index > 0 && prev !== 0
+                    const prev = counts[index - 1];
+                    const changeNumeric =
+                      index > 0 && prev !== undefined && prev !== 0
                         ? ((curr - prev) / prev) * 100
                         : 0;
-                    const change = Number(changeNumber.toFixed(1));
+                    const changeDisplay = changeNumeric.toFixed(1);
 
                     return (
                       <tr
@@ -381,10 +380,10 @@ const RegistrationStatistics: React.FC = () => {
                         <td className="hidden py-3 text-right text-xs sm:table-cell sm:text-sm">
                           {index > 0 && (
                             <span
-                              className={`${changeNumber >= 0 ? "text-green-400" : "text-red-400"}`}
+                              className={`${changeNumeric >= 0 ? "text-green-400" : "text-red-400"}`}
                             >
-                              {changeNumber > 0 ? "+" : ""}
-                              {change}%
+                              {changeNumeric > 0 ? "+" : ""}
+                              {changeDisplay}%
                             </span>
                           )}
                         </td>
