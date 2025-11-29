@@ -486,3 +486,26 @@ export const useGetorganizerCharts = () => {
     },
   });
 };
+
+export const useDownloadOrganizerReport = () => {
+  return useMutation({
+    mutationFn: async () => {
+      const res = await axios.get(`${PROXY_API}/organizer/reports`, {
+        responseType: "blob", // ⚠ WAJIB untuk PDF
+      });
+
+      return res.data as Blob;
+    },
+
+    onSuccess: (data) => {
+      const blobUrl = URL.createObjectURL(data);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = "organizer-report.pdf";
+      link.click();
+
+      URL.revokeObjectURL(blobUrl);
+    },
+  });
+};

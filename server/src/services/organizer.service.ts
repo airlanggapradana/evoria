@@ -1,5 +1,6 @@
 import {Request, Response, NextFunction} from "express";
 import prisma from "../../prisma/prisma";
+import PDFDocument from "pdfkit";
 
 export const getOrganizerDashboard = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -280,5 +281,134 @@ export const getRegistrationChart = async (req: Request, res: Response, next: Ne
     });
   } catch (err) {
     next(err);
+  }
+};
+
+export const downloadOrganizerReportPDF = async (req: Request, res: Response) => {
+  const organizerId = (req as any).user.id;
+
+  try {
+    const events = await prisma.event.findMany({
+      where: {organizerId},
+      include: {
+        tickets: true,
+        registrations: {
+          include: {payment: true}
+        }
+      }
+    });
+
+    const totalEvents = events.length;
+    const totalRegistrations = events.reduce(
+      (acc, e) => acc + e.registrations.length,
+      0
+    );
+
+    const totalPaidRegistrations = events.reduce(
+      (acc, e) =>
+        acc + e.registrations.filter((r) => r.payment?.status === "SUCCESS").length,
+      0
+    );
+
+    const totalRevenue = events.reduce(
+      (acc, e) =>
+        acc +
+        e.registrations
+          .filter((r) => r.payment?.status === "SUCCESS")
+          .reduce((sum, r) => sum + (r.payment?.amount || 0), 0),
+      0
+    );
+
+    // start PDF
+    const doc = new PDFDocument({margin: 40});
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=organizer-report-${organizerId}.pdf`
+    );
+
+    doc.pipe(res);
+
+    // Header
+    doc.fontSize(22).text("Organizer Event Financial Report", {align: "left"});
+    doc.moveDown(0.5);
+    doc.fontSize(14).fillColor("#555").text("Generated automatically", {align: "left"});
+    doc.moveDown(1);
+
+    // Summary Section
+    doc.fontSize(16).fillColor("#000").text("Overall Summary", {
+      underline: true,
+    });
+    doc.moveDown(0.5);
+
+    const summary = [
+      ["Total Events", totalEvents],
+      ["Total Registrations", totalRegistrations],
+      ["Total Paid Registrations", totalPaidRegistrations],
+      ["Total Revenue", `Rp ${totalRevenue.toLocaleString("id-ID")}`],
+    ];
+
+    summary.forEach(([label, value]) => {
+      doc.fontSize(12).text(`${label}: ${value}`);
+    });
+
+    doc.moveDown(1.5);
+    doc.moveTo(40, doc.y).lineTo(550, doc.y).stroke();
+    doc.moveDown(1);
+
+    // Detailed event breakdown
+    for (const event of events) {
+      const paidRegs = event.registrations.filter(
+        (r) => r.payment?.status === "SUCCESS"
+      );
+
+      const eventRevenue = paidRegs.reduce(
+        (acc, r) => acc + (r.payment?.amount || 0),
+        0
+      );
+
+      doc.addPage();
+
+      doc.fontSize(18).text(event.title, {underline: true});
+      doc.moveDown(0.5);
+
+      doc.fontSize(12).text(`Event ID: ${event.id}`);
+      doc.text(`Total Registrations: ${event.registrations.length}`);
+      doc.text(`Paid Registrations: ${paidRegs.length}`);
+      doc.text(`Revenue: Rp ${eventRevenue.toLocaleString("id-ID")}`);
+      doc.moveDown(1);
+
+      // Ticket breakdown per event
+      doc.fontSize(14).text("Ticket Breakdown", {underline: true});
+      doc.moveDown(0.5);
+
+      event.tickets.forEach((ticket) => {
+        const sold = event.registrations.filter((r) => r.ticketId === ticket.id);
+        const soldPaid = sold.filter((r) => r.payment?.status === "SUCCESS");
+
+        const ticketRevenue = soldPaid.reduce(
+          (acc, r) => acc + (r.payment?.amount || 0),
+          0
+        );
+
+        doc.fontSize(12).text(
+          `• ${ticket.name} — Price: Rp ${ticket.price.toLocaleString(
+            "id-ID"
+          )}, Sold: ${soldPaid.length}/${sold.length}, Revenue: Rp ${ticketRevenue.toLocaleString(
+            "id-ID"
+          )}`
+        );
+      });
+
+      doc.moveDown(1);
+      doc.moveTo(40, doc.y).lineTo(550, doc.y).stroke();
+      doc.moveDown(1);
+    }
+
+    doc.end();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({error: "Failed to generate PDF report"});
   }
 };

@@ -16,7 +16,12 @@ import {
   BarChart3,
   Download,
 } from "lucide-react";
-import { useDeleteEvent, useGetOrganizerDetails, useMe } from "@/utils/query";
+import {
+  useDeleteEvent,
+  useDownloadOrganizerReport,
+  useGetOrganizerDetails,
+  useMe,
+} from "@/utils/query";
 import DashboardSkeleton from "@/components/skeletons/dashboard-skeleton";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -24,6 +29,7 @@ import { useEdgeStore } from "@/lib/edgestore";
 import { useDebounce } from "use-debounce";
 import { Badge } from "@/components/ui/badge";
 import NavbarDashboard from "@/components/dashboard/NavbarDashboard";
+import StatisticsChart from "@/components/dashboard/StatisticsChart";
 
 const OrganizerDashboard = () => {
   const router = useRouter();
@@ -37,6 +43,8 @@ const OrganizerDashboard = () => {
   const { data: session, isLoading: isLoadingSession } = useMe();
   const { data: organizerData, isLoading } =
     useGetOrganizerDetails(debouncedSearchQuery);
+  const { mutateAsync: handleDownloadPDF, isPending: isPendingDownload } =
+    useDownloadOrganizerReport();
 
   const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
@@ -204,7 +212,10 @@ const OrganizerDashboard = () => {
                   Pantau performa acara kamu secara real-time
                 </p>
               </button>
-              <button className="group rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-4 text-left transition-all hover:border-green-500 sm:p-6">
+              <button
+                className="group rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-4 text-left transition-all hover:border-green-500 sm:p-6"
+                onClick={async () => await handleDownloadPDF()}
+              >
                 <Download className="mb-2 h-6 w-6 text-green-400 transition-transform group-hover:scale-110 sm:mb-3 sm:h-8 sm:w-8" />
                 <h3 className="mb-1 text-sm font-bold sm:text-base">
                   Export Reports
@@ -458,20 +469,7 @@ const OrganizerDashboard = () => {
 
         {/* Analytics Tab */}
         {selectedTab === "analytics" && (
-          <div className="space-y-6">
-            <div className="rounded-xl border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-6 text-center sm:rounded-2xl sm:p-8">
-              <BarChart3 className="mx-auto mb-3 h-12 w-12 text-indigo-400 sm:mb-4 sm:h-16 sm:w-16" />
-              <h3 className="mb-2 text-xl font-bold sm:text-2xl">
-                Analytics Dashboard
-              </h3>
-              <p className="mb-4 text-sm text-gray-400 sm:mb-6 sm:text-base">
-                Detailed analytics and insights coming soon...
-              </p>
-              <button className="rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2.5 text-sm font-semibold transition-all hover:from-indigo-500 hover:to-purple-500 sm:px-6 sm:py-3 sm:text-base">
-                View Full Analytics
-              </button>
-            </div>
-          </div>
+          <StatisticsChart isShowHeader={false} />
         )}
       </div>
     </>
