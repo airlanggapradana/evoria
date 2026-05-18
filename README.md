@@ -1,4 +1,5 @@
 # Evoria | an Event Ticketing Platform
+<img width="1024" height="572" alt="image" src="https://github.com/user-attachments/assets/cdeadde8-c149-433f-97ab-23fdeecc1a69" />
 
 ## 🏷 Badges
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
