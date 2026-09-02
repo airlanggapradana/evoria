@@ -1,17 +1,17 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Sparkles,
-  Filter,
-  Users,
   Clock,
   MapPin,
-  TrendingUp,
   ChevronRight,
   ChevronLeft,
   Search,
+  Calendar as CalendarIcon,
+  ArrowRight,
 } from "lucide-react";
-import { useState, useMemo, Fragment } from "react";
+import { useState, useMemo, Fragment, useEffect } from "react";
 import { useGetAllEvents, useMe } from "@/utils/query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -21,15 +21,37 @@ import { toast } from "sonner";
 import FeaturedEventSkeleton from "@/components/skeletons/featured-event-skeleton";
 import { Badge } from "@/components/ui/badge";
 
-const FeaturedEvents = () => {
+interface FeaturedEventsProps {
+  externalCategory?: string;
+  externalSearch?: string;
+}
+
+const FeaturedEvents = ({
+  externalCategory,
+  externalSearch,
+}: FeaturedEventsProps) => {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 400);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Sync external filters if provided
+  useEffect(() => {
+    if (externalCategory) {
+      setSelectedCategory(externalCategory);
+    }
+  }, [externalCategory]);
+
+  useEffect(() => {
+    if (externalSearch !== undefined) {
+      setSearchQuery(externalSearch);
+    }
+  }, [externalSearch]);
+
   const { data, isLoading } = useGetAllEvents({
     page: currentPage,
-    limit: 5,
+    limit: 6,
     search: debouncedSearchQuery,
   });
   const { data: session, isLoading: isLoadingSession } = useMe();
@@ -37,29 +59,37 @@ const FeaturedEvents = () => {
   const events = data?.data;
   const pagination = data?.pagination;
 
-  // Extract unique categories with memoization
+  // Extract unique categories
   const categories = useMemo(() => {
-    if (!events || events.length === 0) return [];
-    const uniqueCategories = Array.from(
-      new Set(events.map((evt) => evt.category)),
+    const baseCategories = ["All", "Konser", "Seminar", "Olahraga", "Festival"];
+    if (!events || events.length === 0) return baseCategories;
+    const fromEvents = Array.from(
+      new Set(
+        events
+          .map((evt) => evt.category)
+          .filter((cat): cat is string => Boolean(cat))
+      )
     );
-    return ["All", ...uniqueCategories];
+    return Array.from(new Set([...baseCategories, ...fromEvents]));
   }, [events]);
 
-  // Filter events based on selected category with memoization
+  // Filter events based on selected category
   const filteredEvents = useMemo(() => {
     if (!events) return [];
     if (selectedCategory === "All") return events;
-    return events.filter((event) => event.category === selectedCategory);
+    return events.filter(
+      (event) =>
+        event.category?.toLowerCase() === selectedCategory.toLowerCase()
+    );
   }, [events, selectedCategory]);
 
   const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
     return {
-      day: date.getDate(),
+      day: String(date.getDate()).padStart(2, "0"),
       month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
       fullDate: date.toLocaleDateString("en-US", {
-        month: "long",
+        month: "short",
         day: "numeric",
         year: "numeric",
       }),
@@ -90,7 +120,10 @@ const FeaturedEvents = () => {
   const handlePageChange = (page: number) => {
     if (pagination && page >= 1 && page <= pagination.totalPages) {
       setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const eventsSection = document.getElementById("events");
+      if (eventsSection) {
+        eventsSection.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 
@@ -131,77 +164,78 @@ const FeaturedEvents = () => {
   return (
     <section
       id="events"
-      className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 sm:py-16 md:py-20 lg:py-24"
+      className="relative scroll-mt-20 bg-slate-50/50 py-16 sm:py-20 lg:py-24"
     >
-      {/* Background Elements */}
-      <div className="absolute inset-0 hidden sm:block">
-        <div className="absolute top-20 right-10 h-96 w-96 animate-pulse rounded-full bg-teal-500/10 blur-3xl" />
-        <div className="absolute bottom-20 left-10 h-96 w-96 animate-pulse rounded-full bg-purple-500/10 blur-3xl delay-1000" />
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4">
-        {/* Header */}
-        <div className="mb-10 text-center sm:mb-12">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1.5 backdrop-blur-sm sm:mb-4 sm:px-4 sm:py-2">
-            <Sparkles className="h-3 w-3 text-teal-400 sm:h-4 sm:w-4" />
-            <span className="text-xs font-medium text-teal-300 sm:text-sm">
-              Trending Saat Ini
-            </span>
-          </div>
-
-          <h2 className="mb-3 bg-gradient-to-r from-white via-gray-200 to-white bg-clip-text py-2 text-3xl leading-tight font-extrabold text-transparent sm:mb-4 sm:py-4 sm:text-4xl md:text-5xl lg:text-6xl">
-            Acara Pilihan Minggu Ini
-          </h2>
-          <p className="mx-auto max-w-2xl px-4 text-base text-gray-400 sm:text-lg">
-            Temukan acara terbaik yang sedang tren dan jangan lewatkan momen
-            seru di sekitar Anda.
-          </p>
-        </div>
-
-        {/* Search Bar */}
-        <div className="mx-auto mb-8 max-w-4xl space-y-4 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl sm:mb-10 sm:p-6">
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="relative flex-1">
-              <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <Input
-                type="search"
-                aria-label="Cari event"
-                placeholder="fostifest, seminar digital marketing, workshop fotografi..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-12 border-white/10 bg-white/10 pl-12 text-white placeholder:text-gray-400 focus:border-teal-500/50 sm:h-14"
-              />
+      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="mb-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end sm:mb-12">
+          <div>
+            <div className="mb-2.5 inline-flex items-center gap-2 rounded-full border border-violet-200/80 bg-violet-50/80 px-3.5 py-1 text-xs font-bold tracking-wider text-violet-700 uppercase">
+              <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+              <span>UPCOMING EVENTS</span>
             </div>
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
+              Popular Events Near You
+            </h2>
+            <p className="mt-2 text-base text-slate-600">
+              Discover and book tickets for the hottest events happening right now.
+            </p>
           </div>
+
+          <button
+            onClick={() => {
+              setSelectedCategory("All");
+              setSearchQuery("");
+            }}
+            className="group inline-flex items-center gap-1.5 text-sm font-bold text-violet-600 hover:text-violet-700"
+          >
+            <span>View All Events</span>
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </button>
         </div>
 
-        {/* Category Filter */}
-        <div className="mb-8 flex flex-wrap items-center justify-center gap-2 sm:mb-10 sm:gap-3 md:mb-12">
-          {categories.map((category) => (
-            <Button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              variant="ghost"
-              className={`h-8 rounded-full px-4 text-xs font-medium transition-all sm:h-10 sm:px-6 sm:text-sm ${
-                selectedCategory === category
-                  ? "bg-gradient-to-r from-teal-500 to-sky-500 text-white hover:from-teal-600 hover:to-sky-600"
-                  : "border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              {category}
-            </Button>
-          ))}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-full border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white sm:h-10 sm:w-10"
-          >
-            <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
-          </Button>
+        {/* Search & Category Filter Bar */}
+        <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          {/* Search Input */}
+          <div className="relative w-full lg:max-w-md">
+            <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              type="search"
+              aria-label="Cari event"
+              placeholder="Search events, concerts, seminars..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-11 rounded-full border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+            />
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="flex flex-wrap items-center gap-2">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                variant="ghost"
+                className={`h-9 rounded-full px-4 text-xs font-semibold transition-all duration-200 sm:text-sm ${
+                  selectedCategory.toLowerCase() === category.toLowerCase()
+                    ? "bg-violet-600 text-white shadow-md shadow-violet-500/25 hover:bg-violet-700 hover:text-white"
+                    : "border border-slate-200/80 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                }`}
+              >
+                {category === "Konser"
+                  ? "Music"
+                  : category === "Seminar"
+                  ? "Business"
+                  : category === "Olahraga"
+                  ? "Sports"
+                  : category}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Events Grid */}
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:gap-8 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredEvents.length > 0 ? (
             filteredEvents.map((event) => {
               const startDate = formatDate(event.startTime);
@@ -210,231 +244,154 @@ const FeaturedEvents = () => {
               return (
                 <div
                   key={event.id}
-                  className="group relative overflow-hidden rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:border-teal-500/30 hover:shadow-2xl hover:shadow-teal-500/10 sm:rounded-3xl"
+                  className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-200 hover:shadow-xl hover:shadow-violet-500/10"
                 >
-                  {/* Hover glow effect */}
-                  <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                    <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-teal-500/20 blur-3xl" />
-                    <div className="absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-purple-500/20 blur-3xl" />
+                  {/* Event Thumbnail with Date Badge Overlay */}
+                  <div className="relative h-52 w-full overflow-hidden bg-slate-100 sm:h-56">
+                    <Image
+                      src={
+                        event.bannerUrl ||
+                        "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=600&q=80"
+                      }
+                      alt={event.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
+
+                    {/* Reference-style Date Badge: Top-Left Pill Card */}
+                    <div className="absolute top-3.5 left-3.5 flex flex-col items-center justify-center rounded-2xl border border-white/40 bg-white/95 px-3 py-2 text-center shadow-lg backdrop-blur-md">
+                      <span className="text-[10px] font-black tracking-wider text-violet-600 uppercase">
+                        {startDate.month}
+                      </span>
+                      <span className="text-lg font-black leading-none text-slate-900">
+                        {startDate.day}
+                      </span>
+                    </div>
+
+                    {/* Top-Right Badges: Status & Free */}
+                    <div className="absolute top-3.5 right-3.5 flex flex-col items-end gap-1.5">
+                      {!event.isPaid && (
+                        <span className="rounded-full bg-emerald-500 px-2.5 py-0.5 text-xs font-bold text-white shadow-md">
+                          FREE
+                        </span>
+                      )}
+                      <Badge
+                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold shadow-xs ${
+                          event.isApproved
+                            ? "bg-slate-900/80 text-white backdrop-blur-md"
+                            : "bg-amber-500 text-white"
+                        }`}
+                      >
+                        {event.isApproved ? "Verified" : "Pending"}
+                      </Badge>
+                    </div>
+
+                    {/* Category Tag pill over bottom left of image */}
+                    <div className="absolute bottom-3.5 left-3.5">
+                      <span className="rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                        {event.category || "Event"}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="relative flex flex-col md:flex-row">
-                    <div className="relative h-48 overflow-hidden sm:h-56 md:h-auto md:w-1/3">
-                      <Image
-                        src={event.bannerUrl}
-                        alt={event.title}
-                        width={400}
-                        height={300}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-500 opacity-40 transition-opacity duration-300 group-hover:opacity-70`}
-                      ></div>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
-                        <div className="rounded-xl bg-white/10 px-5 py-4 text-center ring-1 ring-white/20 backdrop-blur-md transition-all duration-300 group-hover:bg-white/15 group-hover:ring-white/30 sm:rounded-2xl sm:px-6 sm:py-5 md:px-8 md:py-6">
-                          <div className="mb-1 text-4xl font-bold text-white drop-shadow-lg sm:text-5xl md:mb-2 md:text-6xl">
-                            {startDate.day}
-                          </div>
-                          <div className="text-base font-semibold tracking-wider text-white/90 sm:text-lg md:text-xl">
-                            {startDate.month}
-                          </div>
+                  {/* Event Details Content */}
+                  <div className="flex flex-1 flex-col justify-between p-5 sm:p-6">
+                    <div>
+                      <h3 className="line-clamp-2 text-lg font-bold text-slate-900 transition-colors duration-200 group-hover:text-violet-600 sm:text-xl">
+                        {event.title}
+                      </h3>
+
+                      <p className="mt-1.5 line-clamp-2 text-xs text-slate-500 sm:text-sm">
+                        {event.description}
+                      </p>
+
+                      {/* Location & Time Row */}
+                      <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-violet-500" />
+                          <span className="truncate">{event.location}</span>
                         </div>
-                        <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-                          {!event.isPaid && (
-                            <span className="rounded-full bg-emerald-500/90 px-2.5 py-0.5 text-xs font-bold text-white shadow-lg backdrop-blur-sm transition-all duration-300 group-hover:bg-emerald-400 sm:px-3 sm:py-1">
-                              FREE
-                            </span>
-                          )}
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-3.5 w-3.5 shrink-0 text-violet-500" />
+                          <span>
+                            {formatTime(event.startTime)} - {formatTime(event.endTime)}
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="relative p-4 sm:p-6 md:w-2/3 md:p-8">
-                      <div className="mb-4 flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-                            <div className={"flex items-center gap-2"}>
-                              <span className="rounded-full bg-gradient-to-r from-gray-800 to-gray-700 px-2.5 py-1 text-xs font-semibold text-gray-200 ring-1 ring-white/10 transition-all duration-300 group-hover:from-teal-600/20 group-hover:to-purple-600/20 group-hover:ring-teal-400/30 sm:px-3">
-                                {event.category}
-                              </span>
-                              <div className="flex items-center gap-1 text-xs text-gray-400 transition-colors duration-300 group-hover:text-gray-300 sm:text-sm">
-                                <Users className="mr-1 h-3.5 w-3.5 text-teal-400 sm:h-4 sm:w-4" />
-                                <span className="font-medium">
-                                  {event.stats.confirmedCount}
-                                </span>
-                                <span>RSVP&apos;d</span>
-                              </div>
-                            </div>
-                            <Badge
-                              className={`rounded-full px-2.5 py-1 text-xs font-semibold transition-colors duration-200 ${
-                                event.isApproved
-                                  ? "bg-emerald-500 text-white ring-1 ring-emerald-400/20"
-                                  : "bg-yellow-600 text-white ring-1 ring-yellow-400/20"
-                              }`}
-                              aria-label={
-                                event.isApproved
-                                  ? "Diterima"
-                                  : "Menunggu Persetujuan"
-                              }
-                            >
-                              {event.isApproved
-                                ? "Diterima"
-                                : "Menunggu Persetujuan"}
-                            </Badge>
-                          </div>
-                          <h2 className="mb-2 text-xl font-bold text-gray-100 transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-teal-400 group-hover:to-purple-400 group-hover:bg-clip-text group-hover:text-transparent sm:text-2xl md:text-3xl">
-                            {event.title}
-                          </h2>
-                          <p className="mb-4 line-clamp-2 text-sm text-gray-400 transition-colors duration-300 group-hover:text-gray-300 sm:mb-6 sm:text-base">
-                            {event.description}
-                          </p>
-                        </div>
+                    {/* Bottom Row: Price & Book Button */}
+                    <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+                      <div>
+                        <span className="text-[11px] font-medium text-slate-400">
+                          Starts from
+                        </span>
+                        <p className="text-base font-extrabold text-slate-900 sm:text-lg">
+                          {lowestPrice === 0 ? "Free" : formatPrice(lowestPrice)}
+                        </p>
                       </div>
 
-                      <div className="mb-4 grid grid-cols-1 gap-3 sm:mb-6 sm:gap-4 md:grid-cols-2">
-                        <div className="flex items-center gap-2.5 text-gray-300 sm:gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-800/80 ring-1 ring-white/10 transition-all duration-300 group-hover:bg-teal-500/10 group-hover:ring-teal-400/30 sm:h-10 sm:w-10">
-                            <Clock className="h-4 w-4 text-teal-400 transition-transform duration-300 group-hover:scale-110 sm:h-5 sm:w-5" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400">
-                              Waktu Acara
-                            </div>
-                            <div className="text-xs font-semibold text-gray-300 transition-colors duration-300 group-hover:text-gray-100 sm:text-sm">
-                              {formatTime(event.startTime)} -{" "}
-                              {formatTime(event.endTime)}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2.5 text-gray-300 sm:gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-800/80 ring-1 ring-white/10 transition-all duration-300 group-hover:bg-purple-500/10 group-hover:ring-purple-400/30 sm:h-10 sm:w-10">
-                            <MapPin className="h-4 w-4 text-purple-400 transition-transform duration-300 group-hover:scale-110 sm:h-5 sm:w-5" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400">
-                              Lokasi
-                            </div>
-                            <div className="text-xs font-semibold text-gray-300 transition-colors duration-300 group-hover:text-gray-100 sm:text-sm">
-                              {event.location}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-4 border-t border-gray-800/50 pt-4 transition-colors duration-300 group-hover:border-gray-700/50 sm:flex-row sm:items-center sm:justify-between sm:pt-6">
-                        <div className="flex items-center gap-4 sm:gap-6">
-                          <div>
-                            <div className="mb-0.5 text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400 sm:mb-1">
-                              Dimulai dari
-                            </div>
-                            <div className="text-xl font-bold text-gray-300 transition-colors duration-300 group-hover:text-teal-400 sm:text-2xl">
-                              {lowestPrice === 0
-                                ? "Free"
-                                : formatPrice(lowestPrice)}
-                            </div>
-                          </div>
-                          <div className="h-10 w-px bg-gray-800/50 transition-colors duration-300 group-hover:bg-gray-700/50 sm:h-12"></div>
-                          <div>
-                            <div className="mb-0.5 text-xs font-medium text-gray-500 transition-colors duration-300 group-hover:text-gray-400 sm:mb-1">
-                              Tiket Tersisa
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <TrendingUp className="h-3.5 w-3.5 text-emerald-400 transition-transform duration-300 group-hover:scale-110 sm:h-4 sm:w-4" />
-                              <span className="text-base font-bold text-gray-300 transition-colors duration-300 group-hover:text-emerald-400 sm:text-lg">
-                                {event.stats.remainingTickets}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <button
-                          className={`flex w-full items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 sm:w-auto sm:px-8 sm:py-3 ${
-                            session?.role === "ORGANIZER" || !event.isApproved
-                              ? "pointer-events-none cursor-not-allowed bg-gray-800 text-gray-400 opacity-60"
-                              : "bg-gradient-to-r from-indigo-600 to-purple-600 shadow-indigo-500/30 hover:scale-105 hover:from-indigo-500 hover:to-purple-500 hover:shadow-xl hover:shadow-indigo-500/50 active:scale-95"
-                          }`}
-                          disabled={
-                            session?.role === "ORGANIZER" || !event.isApproved
+                      <button
+                        className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold text-white shadow-md transition-all duration-200 sm:px-5 sm:py-2.5 sm:text-sm ${
+                          session?.role === "ORGANIZER" || !event.isApproved
+                            ? "cursor-not-allowed bg-slate-300 text-slate-500"
+                            : "bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/25 hover:from-violet-700 hover:to-purple-700 hover:scale-105 active:scale-95"
+                        }`}
+                        disabled={session?.role === "ORGANIZER" || !event.isApproved}
+                        onClick={async () => {
+                          if (session?.role === "ORGANIZER") {
+                            toast.error("Organizer tidak dapat membeli tiket.", {
+                              position: "top-center",
+                              richColors: true,
+                            });
+                            return;
                           }
-                          aria-disabled={
-                            session?.role === "ORGANIZER" || !event.isApproved
+                          if (!session) {
+                            router.push("/auth/sign-in");
+                          } else {
+                            router.push(`/events/${event.id}`);
                           }
-                          title={
-                            session?.role === "ORGANIZER"
-                              ? "Organizers tidak dapat membeli tiket."
-                              : !event.isApproved
-                                ? "Event not approved yet"
-                                : "Buy ticket now"
-                          }
-                          onClick={async () => {
-                            if (session?.role === "ORGANIZER") {
-                              toast.error(
-                                "Organizer tidak dapat membeli tiket.",
-                                { position: "top-center", richColors: true },
-                              );
-                            }
-                            if (!session) {
-                              router.push("/auth/sign-in");
-                            } else {
-                              router.push(`/events/${event.id}`);
-                            }
-                          }}
-                        >
+                        }}
+                      >
+                        <span>
                           {session?.role === "ORGANIZER"
-                            ? "Tidak Dapat Membeli Tiket"
+                            ? "Organizer Mode"
                             : !event.isApproved
-                              ? "Acara Belum Disetujui"
-                              : "Beli Tiket Sekarang"}
-                          <ChevronRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 sm:h-5 sm:w-5" />
-                        </button>
-                      </div>
+                            ? "Pending"
+                            : "Book Now"}
+                        </span>
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </div>
                 </div>
               );
             })
           ) : (
-            <div className="col-span-1 lg:col-span-2">
-              <div className="mx-auto max-w-2xl rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/80 to-gray-800/70 p-8 text-center backdrop-blur-md">
-                <Sparkles className="mx-auto mb-4 h-9 w-9 text-teal-400" />
-                <h3 className="mb-2 text-2xl font-semibold text-white">
-                  Tidak Ada Acara Untuk Ditampilkan
+            <div className="col-span-full">
+              <div className="mx-auto max-w-lg rounded-3xl border border-slate-200/80 bg-white p-8 text-center shadow-xs">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-600">
+                  <CalendarIcon className="h-7 w-7" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">
+                  No Events Found
                 </h3>
-                <p className="mb-6 text-sm text-gray-400">
-                  Saat ini tidak ada acara yang tersedia. Silakan periksa
-                  kembali nanti.
+                <p className="mt-2 text-sm text-slate-500">
+                  We couldn&apos;t find any events matching your criteria. Try resetting
+                  your search or explore other categories.
                 </p>
 
-                <div className="flex flex-wrap items-center justify-center gap-3">
+                <div className="mt-6 flex justify-center gap-3">
                   <Button
                     onClick={() => {
                       setSelectedCategory("All");
+                      setSearchQuery("");
                       setCurrentPage(1);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
-                    className="rounded-full bg-gradient-to-r from-teal-500 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg"
+                    className="rounded-full bg-violet-600 px-6 font-semibold text-white hover:bg-violet-700"
                   >
-                    Explore All Events
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setCurrentPage(1);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }}
-                    className="h-9 rounded-full px-4 py-2 text-sm font-medium text-gray-300"
-                  >
-                    Refresh
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    onClick={() => router.push("/events")}
-                    className="h-9 rounded-full px-4 py-2 text-sm font-medium text-gray-300"
-                  >
-                    Browse Events Page
+                    Reset Filters
                   </Button>
                 </div>
               </div>
@@ -442,72 +399,63 @@ const FeaturedEvents = () => {
           )}
         </div>
 
-        {pagination && pagination.totalPages >= 1 && (
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <div className="text-sm text-gray-400">
-              Showing{" "}
-              <span className="font-semibold text-white">
-                {filteredEvents.length}
-              </span>{" "}
-              of{" "}
-              <span className="font-semibold text-white">
-                {pagination.totalItems}
-              </span>{" "}
-              events
-            </div>
+        {/* Pagination */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200/80 pt-6 sm:flex-row">
+            <p className="text-xs text-slate-500 sm:text-sm">
+              Showing <span className="font-bold text-slate-800">{filteredEvents.length}</span>{" "}
+              of <span className="font-bold text-slate-800">{pagination.totalItems}</span> events
+            </p>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`rounded-lg p-2 transition-all ${
+                className={`flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition ${
                   currentPage === 1
-                    ? "cursor-not-allowed bg-gray-800 text-gray-600"
-                    : "bg-gray-800 text-white hover:bg-gray-700"
+                    ? "cursor-not-allowed opacity-40"
+                    : "hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
                 }`}
+                aria-label="Previous page"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-4 w-4" />
               </button>
 
-              <div className="flex items-center gap-1">
-                {renderPageNumbers().map((page, index) => (
-                  <Fragment key={index}>
-                    {page === "..." ? (
-                      <span className="px-3 py-2 text-gray-500">...</span>
-                    ) : (
-                      <button
-                        onClick={() => handlePageChange(page as number)}
-                        className={`rounded-lg px-4 py-2 font-semibold transition-all ${
-                          currentPage === page
-                            ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30"
-                            : "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )}
-                  </Fragment>
-                ))}
-              </div>
+              {renderPageNumbers().map((page, index) => (
+                <Fragment key={index}>
+                  {page === "..." ? (
+                    <span className="px-2 text-xs text-slate-400">...</span>
+                  ) : (
+                    <button
+                      onClick={() => handlePageChange(page as number)}
+                      className={`h-9 min-w-[36px] rounded-xl px-2 text-xs font-bold transition ${
+                        currentPage === page
+                          ? "bg-violet-600 text-white shadow-md shadow-violet-500/25"
+                          : "border border-slate-200 bg-white text-slate-600 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )}
+                </Fragment>
+              ))}
 
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === pagination.totalPages}
-                className={`rounded-lg p-2 transition-all ${
+                className={`flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition ${
                   currentPage === pagination.totalPages
-                    ? "cursor-not-allowed bg-gray-800 text-gray-600"
-                    : "bg-gray-800 text-white hover:bg-gray-700"
+                    ? "cursor-not-allowed opacity-40"
+                    : "hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
                 }`}
+                aria-label="Next page"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>
         )}
       </div>
-
-      {/* Decorative Grid Pattern */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] bg-center opacity-5" />
     </section>
   );
 };

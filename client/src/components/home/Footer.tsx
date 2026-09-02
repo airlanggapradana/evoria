@@ -1,19 +1,18 @@
 "use client";
+
+import Link from "next/link";
 import {
-  Ticket,
-  Facebook,
-  Twitter,
+  Sparkles,
+  ArrowUp,
   Instagram,
   Linkedin,
+  Twitter,
+  Facebook,
   Mail,
   Phone,
   MapPin,
-  ArrowUp,
+  Heart,
 } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import Image from "next/image";
 
 const Footer = () => {
   const scrollToTop = () => {
@@ -21,80 +20,171 @@ const Footer = () => {
   };
 
   return (
-    <footer className="relative overflow-hidden border-t border-white/10 bg-gradient-to-b from-slate-950 to-slate-900">
-      {/* Background Elements */}
-      <div className="absolute inset-0">
-        <div className="absolute bottom-0 left-20 h-96 w-96 animate-pulse rounded-full bg-teal-500/5 blur-3xl" />
-        <div className="absolute top-0 right-20 h-96 w-96 animate-pulse rounded-full bg-purple-500/5 blur-3xl delay-1000" />
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
-          {/* Brand Section - Larger */}
-          <div className="lg:col-span-1">
-            <Link href="/" className="group mb-6 flex items-center gap-2">
-              <Image
-                src={
-                  "https://res.cloudinary.com/airlanggapradana/image/upload/v1763976168/ChatGPT_Image_Nov_24__2025__04_20_41_PM-removebg-preview_1_krtgkj.webp"
-                }
-                alt={"logo_footer"}
-                width={200}
-                height={200}
-              />
+    <footer id="footer" className="border-t border-slate-100 bg-white pt-16 pb-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8">
+          {/* Brand & Socials (Col 1 & 2) */}
+          <div className="space-y-5 lg:col-span-2">
+            <Link href="/" className="group flex items-center gap-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 via-purple-600 to-indigo-600 text-white shadow-md shadow-violet-500/25">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-2xl font-black tracking-tight text-slate-900">
+                Evoria<span className="text-violet-600">.</span>
+              </span>
             </Link>
-            <p className="mb-6 leading-relaxed text-gray-400">
-              Langkahmu menuju pengalaman acara yang tak terlupakan dimulai di
-              sini. Temukan, pesan, dan nikmati acara favoritmu dengan mudah
-              bersama Evoria.
+
+            <p className="max-w-sm text-sm leading-relaxed text-slate-500">
+              Your one-stop platform for discovering amazing events, concerts, conferences, and
+              booking tickets in just a few clicks.
             </p>
 
-            {/* Newsletter */}
-            <div className="mb-6 space-y-3">
-              <p className="text-sm font-semibold text-white">
-                Subscribe to our newsletter
-              </p>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Enter your email"
-                  className="h-11 border-white/10 bg-white/5 text-white placeholder:text-gray-500 focus:border-teal-500/50"
-                />
-                <Button className="h-11 bg-gradient-to-r from-teal-500 to-sky-500 px-6 hover:from-teal-600 hover:to-sky-600">
-                  Subscribe
-                </Button>
-              </div>
-            </div>
-
             {/* Social Links */}
-            <div className="flex gap-3">
+            <div className="flex items-center gap-2.5 pt-2">
               <Link
-                href="https://instagram.com/iamrangga._"
-                className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-gray-400 transition-all hover:border-teal-500/50 hover:bg-teal-500/10 hover:text-teal-400"
+                href="https://twitter.com"
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600"
+                aria-label="Twitter"
               >
-                <Instagram className="h-5 w-5" />
+                <Twitter className="h-4 w-4" />
               </Link>
               <Link
-                href="https://www.linkedin.com/in/airlanggapradana/"
-                className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-gray-400 transition-all hover:border-teal-500/50 hover:bg-teal-500/10 hover:text-teal-400"
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600"
+                aria-label="Facebook"
               >
-                <Linkedin className="h-5 w-5" />
+                <Facebook className="h-4 w-4" />
+              </Link>
+              <Link
+                href="https://instagram.com/iamrangga._"
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600"
+                aria-label="Instagram"
+              >
+                <Instagram className="h-4 w-4" />
+              </Link>
+              <Link
+                href="https://linkedin.com/in/airlanggapradana/"
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-4 w-4" />
               </Link>
             </div>
           </div>
+
+          {/* Quick Links */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold tracking-wider text-slate-900 uppercase">
+              Quick Links
+            </h4>
+            <ul className="space-y-2.5 text-sm text-slate-500">
+              <li>
+                <Link href="/" className="transition hover:text-violet-600">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link href="#events" className="transition hover:text-violet-600">
+                  Events
+                </Link>
+              </li>
+              <li>
+                <Link href="#categories" className="transition hover:text-violet-600">
+                  Categories
+                </Link>
+              </li>
+              <li>
+                <Link href="#why-us" className="transition hover:text-violet-600">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="#footer" className="transition hover:text-violet-600">
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Categories */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold tracking-wider text-slate-900 uppercase">
+              Categories
+            </h4>
+            <ul className="space-y-2.5 text-sm text-slate-500">
+              <li>
+                <Link href="#events" className="transition hover:text-violet-600">
+                  Music & Concerts
+                </Link>
+              </li>
+              <li>
+                <Link href="#events" className="transition hover:text-violet-600">
+                  Business & Conferences
+                </Link>
+              </li>
+              <li>
+                <Link href="#events" className="transition hover:text-violet-600">
+                  Sports & Outdoor
+                </Link>
+              </li>
+              <li>
+                <Link href="#events" className="transition hover:text-violet-600">
+                  Festivals & Parties
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Support & Contact */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold tracking-wider text-slate-900 uppercase">
+              Contact Us
+            </h4>
+            <ul className="space-y-2.5 text-sm text-slate-500">
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-violet-500" />
+                <a href="mailto:hello@evoria.com" className="transition hover:text-violet-600">
+                  hello@evoria.com
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-violet-500" />
+                <span>+62 (021) 567-8900</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 shrink-0 text-violet-500" />
+                <span>Jl. Sudirman No. 123, Jakarta</span>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 md:flex-row">
-          <p className="text-sm text-gray-400">
-            &copy; 2025 Evoria. All rights reserved.
+        {/* Bottom Copyright Bar */}
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-100 pt-8 sm:flex-row">
+          <p className="text-xs text-slate-500">
+            &copy; {new Date().getFullYear()} Evoria. All rights reserved.
           </p>
 
-          <Button
+          <p className="flex items-center gap-1 text-xs text-slate-500">
+            Made with <Heart className="h-3.5 w-3.5 fill-violet-600 text-violet-600" /> for
+            unforgettable experiences
+          </p>
+
+          <button
             onClick={scrollToTop}
-            size="icon"
-            className="h-10 w-10 rounded-full bg-gradient-to-r from-teal-500 to-sky-500 transition-all hover:scale-105 hover:from-teal-600 hover:to-sky-600"
+            aria-label="Scroll to top"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-50 text-violet-600 transition hover:bg-violet-600 hover:text-white"
           >
-            <ArrowUp className="h-5 w-5" />
-          </Button>
+            <ArrowUp className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </footer>
