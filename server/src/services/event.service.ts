@@ -1,9 +1,13 @@
-import {NextFunction, Request, Response} from "express";
+import { NextFunction, Request, Response } from "express";
 import prisma from "../../prisma/prisma";
-import {EventInput, eventSchema} from "../zod/schema";
-import {Prisma} from "../../generated/prisma";
+import { EventInput, eventSchema } from "../zod/schema";
+import { Prisma } from "../../generated/prisma";
 
-export const getAllEvents = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllEvents = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     // 1. Ambil query params dan set default value
     const page = parseInt(req.query.page as string) || 1;
@@ -12,7 +16,12 @@ export const getAllEvents = async (req: Request, res: Response, next: NextFuncti
     const category = req.query.category as string;
     const location = req.query.location as string;
     // Handle boolean filter (karena query params selalu string)
-    const isPaid = req.query.isPaid === 'true' ? true : req.query.isPaid === 'false' ? false : undefined;
+    const isPaid =
+      req.query.isPaid === "true"
+        ? true
+        : req.query.isPaid === "false"
+          ? false
+          : undefined;
 
     // 2. Hitung skip untuk pagination
     const skip = (page - 1) * limit;
@@ -25,14 +34,14 @@ export const getAllEvents = async (req: Request, res: Response, next: NextFuncti
           mode: "insensitive", // Case insensitive search
         },
       }),
-      ...(category && {category: category}),
+      ...(category && { category: category }),
       ...(location && {
         location: {
           contains: location,
           mode: "insensitive",
         },
       }),
-      ...(isPaid !== undefined && {isPaid: isPaid}),
+      ...(isPaid !== undefined && { isPaid: isPaid }),
     };
 
     // 4. Jalankan query Transaction (Get Data + Get Count) secara paralel agar efisien
@@ -43,25 +52,25 @@ export const getAllEvents = async (req: Request, res: Response, next: NextFuncti
         skip: skip,
         include: {
           organizer: {
-            select: {id: true, name: true, email: true},
+            select: { id: true, name: true, email: true },
           },
           tickets: {
-            select: {id: true, name: true, price: true, quantity: true},
+            select: { id: true, name: true, price: true, quantity: true },
           },
           registrations: {
-            select: {id: true, status: true},
+            select: { id: true, status: true },
           },
         },
-        orderBy: {createdAt: "desc"},
+        orderBy: { createdAt: "desc" },
       }),
-      prisma.event.count({where: whereClause}),
+      prisma.event.count({ where: whereClause }),
     ]);
 
     // 5. Format data (Sama seperti logic Anda sebelumnya)
     const formatted = events.map((event) => {
       const totalRegistrations = event.registrations.length;
       const confirmedCount = event.registrations.filter(
-        (r) => r.status === "CONFIRMED"
+        (r) => r.status === "CONFIRMED",
       ).length;
 
       return {
@@ -80,8 +89,10 @@ export const getAllEvents = async (req: Request, res: Response, next: NextFuncti
         stats: {
           totalRegistrations,
           confirmedCount,
-          remainingTickets:
-            event.tickets.reduce((sum, t) => sum + t.quantity, 0),
+          remainingTickets: event.tickets.reduce(
+            (sum, t) => sum + t.quantity,
+            0,
+          ),
         },
         createdAt: event.createdAt,
       };
@@ -89,12 +100,14 @@ export const getAllEvents = async (req: Request, res: Response, next: NextFuncti
 
     if (formatted.length === 0) {
       return res.status(200).json({
-        message: "No events found", data: [], pagination: {
+        message: "No events found",
+        data: [],
+        pagination: {
           totalItems: 0,
           totalPages: 0,
           currentPage: page,
           limit: limit,
-        }
+        },
       });
     }
 
@@ -114,26 +127,30 @@ export const getAllEvents = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const getEventById = async (req: Request, res: Response, next: NextFunction) => {
-  const {id} = req.params;
+export const getEventById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { id } = req.params;
 
   try {
     const event = await prisma.event.findUnique({
-      where: {id: String(id)},
+      where: { id: String(id) },
       include: {
         organizer: {
-          select: {id: true, name: true, email: true},
+          select: { id: true, name: true, email: true },
         },
         tickets: {
-          select: {id: true, name: true, price: true, quantity: true},
+          select: { id: true, name: true, price: true, quantity: true },
         },
         registrations: {
           include: {
             user: {
-              select: {id: true, name: true, email: true},
+              select: { id: true, name: true, email: true },
             },
             ticket: {
-              select: {id: true, name: true, price: true},
+              select: { id: true, name: true, price: true },
             },
             payment: {
               select: {
@@ -150,16 +167,16 @@ export const getEventById = async (req: Request, res: Response, next: NextFuncti
     });
 
     if (!event) {
-      return res.status(404).json({message: "Event not found"});
+      return res.status(404).json({ message: "Event not found" });
     }
 
     // Statistik tambahan
     const totalRegistrations = event.registrations.length;
     const confirmedCount = event.registrations.filter(
-      (r) => r.status === "CONFIRMED"
+      (r) => r.status === "CONFIRMED",
     ).length;
     const checkedInCount = event.registrations.filter(
-      (r) => r.checkedIn
+      (r) => r.checkedIn,
     ).length;
 
     const response = {
@@ -179,8 +196,7 @@ export const getEventById = async (req: Request, res: Response, next: NextFuncti
         totalRegistrations,
         confirmedCount,
         checkedInCount,
-        remainingTickets:
-          event.tickets.reduce((sum, t) => sum + t.quantity, 0),
+        remainingTickets: event.tickets.reduce((sum, t) => sum + t.quantity, 0),
       },
       createdAt: event.createdAt,
       updatedAt: event.updatedAt,
@@ -195,7 +211,11 @@ export const getEventById = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const createEvent = async (req: Request, res: Response, next: NextFunction) => {
+export const createEvent = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const {
       title,
@@ -207,19 +227,19 @@ export const createEvent = async (req: Request, res: Response, next: NextFunctio
       location,
       organizerId,
       category,
-      tickets
+      tickets,
     }: EventInput = eventSchema.parse(req.body);
 
     const newEvent = await prisma.$transaction(async (tx) => {
       //   check if organizer exists
       const organizer = await tx.user.findUnique({
-        where: {id: organizerId},
+        where: { id: organizerId },
       });
 
       if (!organizer) {
         return res.status(404).json({
           message: "Organizer not found",
-        })
+        });
       }
 
       // create event
@@ -236,39 +256,38 @@ export const createEvent = async (req: Request, res: Response, next: NextFunctio
           location,
           category,
           organizer: {
-            connect: {id: organizerId}
-          }
-        }
+            connect: { id: organizerId },
+          },
+        },
       });
 
       // create tickets if provided
       if (tickets && tickets.length > 0) {
         await tx.ticket.createMany({
-          data: tickets.map(ticket => ({
+          data: tickets.map((ticket) => ({
             eventId: event.id,
             name: ticket.name,
             quantity: ticket.quantity,
-            price: ticket.price
-          }))
+            price: ticket.price,
+          })),
         });
       }
 
-
       // return event with tickets
       return tx.event.findUnique({
-        where: {id: event.id},
+        where: { id: event.id },
         include: {
           tickets: true,
           organizer: {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       });
-    })
+    });
     if (!newEvent) return;
 
     return res.status(201).json({
@@ -278,36 +297,42 @@ export const createEvent = async (req: Request, res: Response, next: NextFunctio
   } catch (e) {
     next(e);
   }
-}
+};
 
-export const updateEventById = async (req: Request, res: Response, next: NextFunction) => {
+export const updateEventById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const eventInput = eventSchema.partial().parse(req.body);
-    const {id} = req.params;
+    const { id } = req.params;
 
     const event = await prisma.event.findUnique({
-      where: {id: String(id)},
+      where: { id: String(id) },
     });
 
     if (!event) {
-      return res.status(404).json({message: "Event not found"});
+      return res.status(404).json({ message: "Event not found" });
     }
 
-    const {tickets, organizerId, ...updateData} = eventInput;
+    const { tickets, organizerId, ...updateData } = eventInput;
 
     // Remove undefined values and convert dates
     const cleanUpdateData = Object.fromEntries(
       Object.entries({
         ...updateData,
-        startTime: updateData.startTime ? new Date(updateData.startTime) : undefined,
+        startTime: updateData.startTime
+          ? new Date(updateData.startTime)
+          : undefined,
         endTime: updateData.endTime ? new Date(updateData.endTime) : undefined,
-      }).filter(([_, value]) => value !== undefined)
+      }).filter(([_, value]) => value !== undefined),
     );
 
     const updatedEvent = await prisma.$transaction(async (tx) => {
       // Update event fields (excluding tickets and organizerId)
       const updated = await tx.event.update({
-        where: {id: String(id)},
+        where: { id: String(id) },
         data: cleanUpdateData,
       });
 
@@ -315,12 +340,12 @@ export const updateEventById = async (req: Request, res: Response, next: NextFun
       if (tickets && tickets.length > 0) {
         // Delete existing tickets
         await tx.ticket.deleteMany({
-          where: {eventId: String(id)},
+          where: { eventId: String(id) },
         });
 
         // Create new tickets
         await tx.ticket.createMany({
-          data: tickets.map(ticket => ({
+          data: tickets.map((ticket) => ({
             eventId: String(id),
             name: ticket.name,
             quantity: ticket.quantity,
@@ -330,11 +355,11 @@ export const updateEventById = async (req: Request, res: Response, next: NextFun
       }
 
       return tx.event.findUnique({
-        where: {id: String(id)},
+        where: { id: String(id) },
         include: {
           tickets: true,
           organizer: {
-            select: {id: true, name: true, email: true},
+            select: { id: true, name: true, email: true },
           },
         },
       });
@@ -349,22 +374,26 @@ export const updateEventById = async (req: Request, res: Response, next: NextFun
   }
 };
 
-export const deleteEventById = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteEventById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
 
     const event = await prisma.event.findUnique({
-      where: {id: String(id)},
-    })
+      where: { id: String(id) },
+    });
 
     if (!event) {
-      return res.status(404).json({message: "Event not found"});
+      return res.status(404).json({ message: "Event not found" });
     }
     await prisma.event.delete({
-      where: {id: String(id)},
-    })
-    return res.status(200).json({message: "Event deleted successfully"});
+      where: { id: String(id) },
+    });
+    return res.status(200).json({ message: "Event deleted successfully" });
   } catch (e) {
-    next(e)
+    next(e);
   }
-}
+};
